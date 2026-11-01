@@ -1,8 +1,9 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// GitHub Pages는 https://<계정>.github.io/ssamtool/ 아래에서 열리므로 빌드할 때만 경로를 맞춘다
-export default defineConfig(({ command }) => ({
+// 배포처마다 앱이 열리는 경로가 다르다.
+// GitHub Pages는 /ssamtool/ 아래(워크플로가 VITE_BASE를 넘김), Vercel과 개발 서버는 / 에서 열린다.
+export default defineConfig({
   plugins: [react()],
-  base: command === 'build' ? '/ssamtool/' : '/',
-}))
+  base: process.env.VITE_BASE || '/',
+})
