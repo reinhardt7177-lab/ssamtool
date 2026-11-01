@@ -35,17 +35,14 @@ function useRoute(): string {
   return route
 }
 
-// 라벨지 한 장을 줄인 모양: 쌤툴이 만드는 것(문서·라벨)에서 따온 표식
+// 색깔 탭이 달린 파일철 세 권을 겹친 표식
 function Mark() {
   return (
-    <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true">
-      <rect x="4" y="2" width="22" height="26" rx="3" fill="#141414" />
-      <rect x="7.5" y="6" width="6.5" height="4.5" rx="1" fill="#fff" />
-      <rect x="16" y="6" width="6.5" height="4.5" rx="1" fill="#fff" />
-      <rect x="7.5" y="12.5" width="6.5" height="4.5" rx="1" fill="#fff" />
-      <rect x="16" y="12.5" width="6.5" height="4.5" rx="1" fill="#1d5fbf" />
-      <rect x="7.5" y="19" width="15" height="2" rx="1" fill="#fff" opacity=".55" />
-      <rect x="7.5" y="23" width="9" height="2" rx="1" fill="#fff" opacity=".55" />
+    <svg width="40" height="34" viewBox="0 0 40 34" aria-hidden="true">
+      <path d="M4 6h10l3 3h19v21H4Z" fill="#ffd84d" />
+      <path d="M2 11h11l3 3h20v18H2Z" fill="#ff7a59" />
+      <path d="M0 16h12l3 3h21v15H0Z" fill="#6fa0ff" />
+      <rect x="6" y="23" width="22" height="2.5" rx="1.25" fill="#141414" opacity=".55" />
     </svg>
   )
 }
@@ -71,44 +68,46 @@ function Icon({ id }: { id: string }) {
   )
 }
 
+
 export default function App() {
   const route = useRoute()
-  const [open, setOpen] = useState(false)
   const found = findTool(route)
-  useEffect(() => setOpen(false), [route])
+  const area = found?.area
+  const color = area?.color ?? 'var(--manila)'
 
   return (
-    <div className="shell">
-      <aside className={`side no-print${open ? ' open' : ''}`}>
+    <div className="desk">
+      <header className="desk-top no-print">
         <a className="brand" href="#">
           <Mark />
-          <span><b>쌤툴</b><small>학교 잡업무 도구함</small></span>
+          <span><b>쌤툴</b><small>선생님 책상 위 잡업무 파일철</small></span>
         </a>
-        <button className="btn text menu-btn" aria-expanded={open} onClick={() => setOpen(o => !o)}>{open ? '닫기' : '메뉴'}</button>
-        <nav className="nav" aria-label="도구">
-          <div className="nav-group">
-            <a className="nav-item" href="#" aria-current={!found ? 'page' : undefined}><Icon id="home" />도구함</a>
-          </div>
-          {AREAS.filter(a => a.tools.some(t => t.status === 'ready')).map(a => (
-            <div key={a.id} className="nav-group">
-              <div className="nav-label">{a.name}</div>
-              {a.tools.filter(t => t.status === 'ready').map(t => (
-                <a key={t.id} className="nav-item" href={`#/${t.id}`} aria-current={route === t.id ? 'page' : undefined}>
-                  <Icon id={t.id} />{t.name}
-                </a>
-              ))}
-            </div>
-          ))}
-        </nav>
-        <p className="side-foot">넣은 파일은 이 브라우저 안에서만 처리돼요. 서버로 올라가지 않아요.</p>
-      </aside>
+        <p className="desk-note">넣은 파일과 명단은 이 브라우저 안에서만 처리돼요. 서버로 올라가지 않아요.</p>
+      </header>
 
-      <main className="main">
+      <nav className="tabs no-print" aria-label="업무 영역">
+        <a className="tab" href="#" style={{ '--tc': 'var(--manila)' } as React.CSSProperties} aria-current={!found ? 'page' : undefined}>전체</a>
+        {AREAS.map(a => {
+          const first = a.tools.find(t => t.status === 'ready')
+          const ready = a.tools.filter(t => t.status === 'ready').length
+          return (
+            <a key={a.id} className="tab" href={first ? `#/${first.id}` : `#area-${a.id}`} style={{ '--tc': a.color } as React.CSSProperties} aria-current={area?.id === a.id ? 'page' : undefined}>
+              {a.name}<em className="num">{ready}</em>
+            </a>
+          )
+        })}
+      </nav>
+
+      <main className="folder" style={{ '--c': color } as React.CSSProperties}>
         {found && SCREENS[found.tool.id] ? (
           <div className="canvas">
             <header className="title-row no-print">
               <div>
-                <div className="crumb"><a href="#">도구함</a> / {found.area.name}</div>
+                <nav className="crumb" aria-label={`${found.area.name} 도구`}>
+                  {found.area.tools.map(t => t.status === 'ready'
+                    ? <a key={t.id} href={`#/${t.id}`} aria-current={t.id === found.tool.id ? 'page' : undefined}>{t.name}</a>
+                    : <span key={t.id}>{t.name} · 만드는 중</span>)}
+                </nav>
                 <h1>{found.tool.name}</h1>
                 <p>{found.tool.summary}</p>
               </div>
@@ -124,52 +123,39 @@ export default function App() {
 }
 
 function Home() {
-  const ready = AREAS.flatMap(a => a.tools.map(t => ({ ...t, area: a.name }))).filter(t => t.status === 'ready')
-  const soon = AREAS.flatMap(a => a.tools.map(t => ({ ...t, area: a.name }))).filter(t => t.status !== 'ready')
+  const all = AREAS.flatMap(a => a.tools)
+  const ready = all.filter(t => t.status === 'ready').length
   return (
     <div className="canvas">
       <header className="title-row">
         <div>
-          <h1>도구함</h1>
-          <p>학교 잡업무를 브라우저 안에서 끝내는 도구들이에요. 지금 {ready.length}개를 쓸 수 있고, {soon.length}개를 만들고 있어요.</p>
+          <h1>오늘 꺼낼 서류를 고르세요</h1>
+          <p>학교 잡업무를 영역별 파일철에 모았어요. 지금 {ready}개 도구를 쓸 수 있고, {all.length - ready}개를 만들고 있어요.</p>
         </div>
       </header>
-
-      <section className="grid-3" aria-label="지금 쓸 수 있는 도구">
-        {ready.map(t => (
-          <a key={t.id} className="tool-card" href={`#/${t.id}`}>
-            <span className="area">{t.area}</span>
-            <h2>{t.name}</h2>
-            <p>{t.summary}</p>
-            <span className="foot">
-              <span className="formats">{t.formats?.map(f => <span key={f} className="pill">{f}</span>)}</span>
-              <span className="go">열기 →</span>
-            </span>
-          </a>
-        ))}
-      </section>
-
-      <section className="panel">
-        <div className="panel-head">
-          <h2>만들고 있는 도구</h2>
-          <span className="meta num">{soon.length}개</span>
-        </div>
-        <div className="scroll-x">
-          <table className="list roadmap">
-            <thead><tr><th>영역</th><th>도구</th><th>하는 일</th><th></th></tr></thead>
-            <tbody>
-              {soon.map(t => (
-                <tr key={t.id}>
-                  <td className="area-cell">{t.area}</td>
-                  <td>{t.name}</td>
-                  <td>{t.summary}</td>
-                  <td style={{ textAlign: 'right' }}><span className="pill">만드는 중</span></td>
-                </tr>
+      <div className="stack-folders">
+        {AREAS.map(a => (
+          <section key={a.id} id={`area-${a.id}`} className="sf" style={{ '--c': a.color } as React.CSSProperties}>
+            <h2 className="sf-tab">{a.name}</h2>
+            <div className="sf-body">
+              {a.tools.map(t => t.status === 'ready' ? (
+                <a key={t.id} className="sheet-card" href={`#/${t.id}`}>
+                  <span className="sc-icon"><Icon id={t.id} /></span>
+                  <b>{t.name}</b>
+                  <span className="sc-sum">{t.summary}</span>
+                  <span className="sc-foot">{t.formats?.map(f => <i key={f}>{f}</i>)}<span className="go">열기 →</span></span>
+                </a>
+              ) : (
+                <div key={t.id} className="sheet-card soon">
+                  <b>{t.name}</b>
+                  <span className="sc-sum">{t.summary}</span>
+                  <span className="sc-foot"><span className="stamp">만드는 중</span></span>
+                </div>
               ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
+            </div>
+          </section>
+        ))}
+      </div>
     </div>
   )
 }

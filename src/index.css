@@ -1,73 +1,82 @@
-/* 스타일: achromatic ledger (taste-skill app sheet, seed 1665707631)
-   얼굴: 공문 서식철 같은 청회색 바탕 #f2f4f7, 흰 판, 잉크색 글. 색은 결과 데이터(--data) 한 곳에만.
-   격자: 사이드바 248 + 캔버스(좌우 32 거터, 최대 1180). 간격은 --gap 하나(12)로 가로·세로 모두. */
+/* 방향: 파일철 책상 (레퍼런스: Mosby's Files — 색깔 인덱스 탭이 달린 파일철 더미)
+   교무실 책상의 초록 고무 매트 위에, 영역마다 색이 다른 파일철을 놓는다.
+   영역 = 파일철(색), 도구 = 파일철에서 꺼낸 서류(흰 종이). 탭 색끼리는 일부러 부딪치게 칠한다.
+   글꼴: 제목은 굵은 디스플레이(Black Han Sans), 본문은 Pretendard. */
 :root {
-  --ground: #f2f4f7;
+  --desk: #2d5a4b;          /* 교무실 책상 매트 */
+  --desk-deep: #234a3d;
+  --desk-ink: #f4efe2;
+  --desk-muted: #b9cdc3;
+  --manila: #f1e6cc;        /* 기본 파일철(홈) */
+  --c: var(--manila);       /* 지금 열린 파일철 색 */
+
+  --ground: #fbf8f1;
   --surface: #ffffff;
-  --raised: #f6f7f9;
-  --active: #e4e7ec;
-  --border: #e3e6ea;
-  --rule: #eef0f3;
-  --control: #cfd4db;
-  --text: #0a0a0a;
-  --muted: #5f646b;
-  --faint: #6b7078;
+  --raised: #f6f3ec;
+  --active: #ece6d8;
+  --border: #e4ddcd;
+  --rule: #efe9dc;
+  --control: #cfc6b3;
+  --text: #141414;
+  --muted: #5d5a52;
+  --faint: #6b675e;
   --primary: #141414;
   --data: #1d5fbf;
   --data-soft: #dbe6f6;
   --positive: #247b50;
   --negative: #c4242a;
-  --pill-neutral-bg: #eceef1; --pill-neutral-ink: #3d4148;
+  --pill-neutral-bg: #efe9dc; --pill-neutral-ink: #3d3a33;
   --pill-positive-bg: #dcfae5; --pill-positive-ink: #04250e;
   --pill-negative-bg: #ffedea; --pill-negative-ink: #831c1e;
 
-  --radius-card: 8px;
+  --radius-card: 6px;
   --radius-control: 6px;
   --radius-chip: 4px;
   --gap: 12px;
   --pad: 20px;
   --control-height: 36px;
-  --sidebar-width: 248px;
   --fs-title: 24px; --fs-section: 16px; --fs-body: 14px; --fs-small: 12px;
   --font: "Pretendard Variable", "Pretendard", "Malgun Gothic", "Apple SD Gothic Neo", system-ui, sans-serif;
+  --display: "Black Han Sans", "Pretendard Variable", "Malgun Gothic", sans-serif;
   color-scheme: light;
 }
 
 * { box-sizing: border-box }
 html, body, #root { min-height: 100% }
-body { margin: 0; background: var(--ground); color: var(--text); font-family: var(--font); font-size: var(--fs-body); line-height: 20px; -webkit-font-smoothing: antialiased; word-break: keep-all; overflow-wrap: anywhere }
+body { margin: 0; background: var(--desk); color: var(--text); font-family: var(--font); font-size: var(--fs-body); line-height: 20px; -webkit-font-smoothing: antialiased; word-break: keep-all; overflow-wrap: anywhere }
 button, input, select, textarea { font: inherit; color: inherit }
 button { cursor: pointer }
 button:disabled { cursor: default }
 .num { font-variant-numeric: tabular-nums }
-:focus-visible { outline: 2px solid var(--data); outline-offset: 2px }
+:focus-visible { outline: 2px solid var(--text); outline-offset: 2px }
 
-/* ── 껍데기: 바탕 위 사이드바, 상단바 없음 ── */
-.shell { display: grid; grid-template-columns: var(--sidebar-width) minmax(0, 1fr); min-height: 100vh }
-.side { padding: 20px 12px; display: flex; flex-direction: column; gap: 24px; position: sticky; top: 0; height: 100vh; overflow-y: auto; border-right: 1px solid var(--border) }
-.brand { display: flex; gap: 10px; align-items: center; text-decoration: none; color: var(--text); padding: 0 8px }
+/* ── 책상 위 머리: 이름표와 색깔 탭 ── */
+.desk { min-height: 100vh; padding: 20px 28px 56px; display: grid; align-content: start; max-width: 1440px; margin: 0 auto }
+.desk-top { display: flex; align-items: center; justify-content: space-between; gap: 12px 24px; flex-wrap: wrap; padding: 0 4px 18px; color: var(--desk-ink) }
+.brand { display: flex; gap: 12px; align-items: center; text-decoration: none; color: var(--desk-ink) }
 .brand svg { flex: none }
-.brand b { display: block; font-size: 16px; line-height: 20px; font-weight: 700 }
-.brand small { display: block; font-size: var(--fs-small); color: var(--muted); line-height: 16px }
-.side .menu-btn { display: none }
-.nav { display: grid; gap: 20px }
-.nav-group { display: grid; gap: 2px }
-.nav-label { font-size: var(--fs-small); color: var(--muted); padding: 0 10px 4px }
-.nav-item { display: flex; align-items: center; gap: 10px; height: 32px; padding: 0 10px; border-radius: var(--radius-control); color: var(--text); text-decoration: none; background: none; border: 0; text-align: left; width: 100% }
-.nav-item svg { flex: none; color: var(--muted) }
-.nav-item:hover { background: var(--raised) }
-.nav-item[aria-current="page"] { background: var(--active) }
-.side-foot { margin-top: auto; padding: 0 10px; font-size: var(--fs-small); line-height: 18px; color: var(--muted) }
+.brand b { display: block; font-family: var(--display); font-weight: 400; font-size: 30px; line-height: 32px; letter-spacing: -0.01em }
+.brand small { display: block; font-size: 13px; color: var(--desk-muted); line-height: 18px }
+.desk-note { margin: 0; font-size: 13px; color: var(--desk-muted); max-width: 46ch }
 
-/* ── 캔버스와 제목 줄 ── */
-.main { padding: 32px 32px 64px; min-width: 0 }
-.canvas { max-width: 1180px; display: grid; gap: 28px }
+.tabs { display: flex; gap: 2px; overflow-x: auto; padding: 0 8px; scrollbar-width: none; position: relative; z-index: 1 }
+.tabs::-webkit-scrollbar { display: none }
+.tab { --tc: var(--manila); flex: none; display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 22px; margin-bottom: -1px; background: var(--tc); color: #141414; text-decoration: none; font-weight: 700; font-size: 14px; clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 100%, 0 100%); transform: translateY(6px); transition: transform .15s ease; white-space: nowrap }
+.tab:hover { transform: translateY(2px) }
+.tab[aria-current="page"] { transform: none; height: 44px; font-size: 15px }
+.tab em { font-style: normal; font-weight: 500; font-size: 12px; opacity: .72 }
+
+/* ── 열린 파일철과 그 안의 서류 ── */
+.folder { background: var(--c); border-radius: 0 10px 10px 10px; padding: 26px 26px 30px; min-width: 0; display: grid; gap: 22px; align-content: start }
+.canvas { display: grid; gap: 22px; min-width: 0 }
 .title-row { display: flex; flex-wrap: wrap; gap: 8px 24px; align-items: end; justify-content: space-between }
-.title-row h1 { margin: 0; font-size: var(--fs-title); line-height: 32px; font-weight: 700; letter-spacing: -0.01em }
-.title-row p { margin: 4px 0 0; color: var(--muted); font-size: 15px; line-height: 22px; max-width: 68ch }
-.crumb { font-size: var(--fs-small); color: var(--muted); margin-bottom: 2px }
-.crumb a { color: inherit; text-decoration: none }
-.crumb a:hover { color: var(--text) }
+.title-row h1 { margin: 0; font-family: var(--display); font-weight: 400; font-size: clamp(30px, 3.4vw, 44px); line-height: 1.1; letter-spacing: -0.01em; text-wrap: balance }
+.title-row p { margin: 8px 0 0; color: #26241f; font-size: 15px; line-height: 22px; max-width: 68ch }
+.crumb { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px }
+.crumb a, .crumb span { font-size: 13px; text-decoration: none; color: #141414; background: rgba(255, 255, 255, .55); padding: 4px 10px; border-radius: 3px }
+.crumb a:hover { background: #fff }
+.crumb a[aria-current="page"] { background: #141414; color: #fff }
+.crumb span { opacity: .6 }
 
 /* ── 판(panel) ── */
 .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-card); padding: var(--pad); display: grid; gap: 16px; align-content: start; min-width: 0 }
@@ -126,41 +135,52 @@ table.list tfoot td { border-top: 1px solid var(--border); font-weight: 600 }
 .cell-input { width: 100%; min-width: 160px; height: 32px; border: 1px solid var(--control); border-radius: var(--radius-control); padding: 0 8px; background: var(--surface) }
 .sub { display: block; font-size: 12px; color: var(--muted); line-height: 18px; margin-top: 2px }
 
-/* ── 홈 ── */
-.tool-card { display: grid; grid-template-rows: auto auto 1fr auto; gap: 8px; text-decoration: none; color: var(--text); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-card); padding: var(--pad); transition: border-color .12s }
-.tool-card:hover { border-color: var(--text) }
-.tool-card .area { font-size: var(--fs-small); color: var(--muted) }
-.tool-card h2 { margin: 0; font-size: 17px; line-height: 24px; font-weight: 600 }
-.tool-card p { margin: 0; color: var(--muted); line-height: 21px }
-.tool-card .foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding-top: 12px; margin-top: 4px; border-top: 1px solid var(--rule) }
-.formats { display: flex; flex-wrap: wrap; gap: 4px }
-.go { font-weight: 500; white-space: nowrap }
-.roadmap td:nth-child(2) { font-weight: 500; white-space: nowrap }
-.roadmap td:nth-child(3) { color: var(--muted) }
-.roadmap .area-cell { color: var(--muted); white-space: nowrap; width: 150px }
+/* ── 홈: 파일철 더미 ── 파일철마다 탭이 엇갈리게 놓이고, 안에 서류 카드가 꽂혀 있다 */
+.stack-folders { display: grid; gap: 0 }
+.sf { --tab-x: 0px; position: relative; margin-top: -14px }
+.sf:first-child { margin-top: 0 }
+.sf:nth-child(7n+2) { --tab-x: 14% }
+.sf:nth-child(7n+3) { --tab-x: 28% }
+.sf:nth-child(7n+4) { --tab-x: 42% }
+.sf:nth-child(7n+5) { --tab-x: 56% }
+.sf:nth-child(7n+6) { --tab-x: 70% }
+.sf:nth-child(7n+7) { --tab-x: 8% }
+.sf-tab { margin: 0 0 0 var(--tab-x); display: inline-block; background: var(--c); color: #141414; font-family: var(--display); font-weight: 400; font-size: 22px; line-height: 1; padding: 13px 30px 11px; clip-path: polygon(14px 0, calc(100% - 14px) 0, 100% 100%, 0 100%) }
+.sf-body { background: var(--c); border-radius: 0 10px 10px 10px; padding: 18px 18px 30px; display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px; box-shadow: 0 -2px 0 rgba(0, 0, 0, .08) } /* taste-skill-ignore: 겹친 파일철 가장자리 */
+.sheet-card { position: relative; display: grid; grid-template-rows: auto auto 1fr auto; gap: 6px; text-decoration: none; color: #141414; background: #fffdf8; padding: 16px 18px 14px; border-radius: 3px; transition: transform .18s ease; min-height: 150px }
+.sheet-card::before { content: ""; position: absolute; top: -6px; left: 22px; width: 34px; height: 14px; border-radius: 3px; background: rgba(255, 255, 255, .7); outline: 1px solid rgba(0, 0, 0, .08) } /* 클립 */
+a.sheet-card:hover { transform: translateY(-4px) rotate(-.6deg) }
+.sheet-card b { font-size: 17px; line-height: 24px; font-weight: 800 }
+.sc-icon { color: #141414; display: inline-flex; width: 30px; height: 30px; align-items: center; justify-content: center; border: 1.5px solid #141414; border-radius: 50% }
+.sc-sum { color: #4a473f; font-size: 13.5px; line-height: 20px }
+.sc-foot { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; padding-top: 10px; border-top: 1px dashed #d9d0bd }
+.sc-foot i { font-style: normal; font-size: 12px; background: var(--c); padding: 1px 7px; border-radius: 3px; font-weight: 600 }
+.sc-foot .go { margin-left: auto; font-weight: 700 }
+.sheet-card.soon { background: rgba(255, 253, 248, .55); color: #3d3a33 }
+.sheet-card.soon b { font-weight: 700 }
+.stamp { margin-left: auto; font-size: 12px; font-weight: 800; color: #b3261e; border: 2px solid #b3261e; padding: 1px 8px; border-radius: 3px; transform: rotate(-4deg); letter-spacing: .02em }
+
+/* 도구 화면의 판도 파일철 안에 꽂힌 종이처럼 */
+.folder .panel { background: #fffdf8; border-color: transparent }
 
 /* 결과 막대: 이 앱의 유일한 색 */
 .meter { position: relative; height: 6px; border-radius: 3px; background: var(--rule); min-width: 80px }
 .meter > i { position: absolute; inset: 0 auto 0 0; border-radius: 3px; background: var(--data) }
 
 @media (max-width: 860px) {
-  .shell { grid-template-columns: 1fr }
-  .side { position: sticky; top: 0; z-index: 5; height: auto; flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0; padding: 0 16px; min-height: 52px; background: var(--ground); border-right: 0; border-bottom: 1px solid var(--border) }
-  .side .menu-btn { display: inline-flex }
-  .side .nav, .side .side-foot { display: none }
-  .side.open .nav { display: grid; flex-basis: 100%; padding: 12px 0 16px }
-  .side.open .side-foot { display: block; flex-basis: 100%; padding: 0 10px 16px }
-  .nav-item { height: 44px }
-  .main { padding: 20px 16px 48px }
+  .desk { padding: 14px 10px 40px }
+  .desk-note { display: none }
+  .folder { padding: 18px 14px 22px; border-radius: 0 8px 8px 8px }
   .grid-2, .grid-3 { grid-template-columns: 1fr }
-  .roadmap .area-cell { display: none }
+  .sf-tab { margin-left: 0; font-size: 19px; padding: 11px 22px 9px }
+  .sf-body { grid-template-columns: 1fr; padding: 14px 12px 24px }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important } }
 @media print {
   .no-print { display: none !important }
   body { background: #fff }
-  .shell { display: block }
-  .main { padding: 0 }
+  .desk { padding: 0; display: block }
+  .folder { background: none; padding: 0 }
 }
 
 .empty-line { border: 1px dashed var(--control); border-radius: var(--radius-card); padding: 12px 14px }
