@@ -1,5 +1,7 @@
-import { useEffect, useState } from 'react'
-import { AREAS, findTool } from './registry'
+import { useEffect, useRef, useState } from 'react'
+import gsap from 'gsap'
+import { useGSAP } from '@gsap/react'
+import { AREAS, findTool, type Area } from './registry'
 import { DocShrink } from './tools/docShrink/DocShrink'
 import { PdfMerge } from './tools/pdfMerge/PdfMerge'
 import { LabelMaker } from './tools/labels/LabelMaker'
@@ -10,6 +12,8 @@ import { ReplyCollect } from './tools/replyCollect/ReplyCollect'
 import { FieldTrip } from './tools/fieldTrip/FieldTrip'
 import { CounselWeek } from './tools/counselWeek/CounselWeek'
 import { SafetyHours } from './tools/safetyHours/SafetyHours'
+
+gsap.registerPlugin(useGSAP)
 
 const SCREENS: Record<string, () => React.ReactElement> = {
   'doc-shrink': () => <DocShrink />,
@@ -35,126 +39,131 @@ function useRoute(): string {
   return route
 }
 
-// 색깔 탭이 달린 파일철 세 권을 겹친 표식
-function Mark() {
-  return (
-    <svg width="40" height="34" viewBox="0 0 40 34" aria-hidden="true">
-      <path d="M4 6h10l3 3h19v21H4Z" fill="#ffd84d" />
-      <path d="M2 11h11l3 3h20v18H2Z" fill="#ff7a59" />
-      <path d="M0 16h12l3 3h21v15H0Z" fill="#6fa0ff" />
-      <rect x="6" y="23" width="22" height="2.5" rx="1.25" fill="#141414" opacity=".55" />
-    </svg>
-  )
-}
-
-const ICONS: Record<string, React.ReactElement> = {
-  home: <path d="M2.5 7.5 8 3l5.5 4.5V13a.5.5 0 0 1-.5.5h-3.5v-4h-3v4H3a.5.5 0 0 1-.5-.5Z" />,
-  'doc-shrink': <><path d="M4 1.5h5.5L12.5 4.5v10h-8.5Z" /><path d="M6.5 9.5 8.5 11.5 10.5 9.5M8.5 6v5.5" /></>,
-  'pdf-merge': <><path d="M3 3.5h6.5v9H3Z" /><path d="M9.5 5.5H13v9H6.5v-2" /></>,
-  'gongmun-check': <><path d="M3.5 1.5h9v13h-9Z" /><path d="M6 5.5h4M6 8h4M6 10.5l1.2 1.2L10 9" /></>,
-  'safety-hours': <><path d="M8 1.5 13.5 4v4c0 3-2.4 5.4-5.5 6.5C4.9 13.4 2.5 11 2.5 8V4Z" /><path d="m5.5 8 1.8 1.8L10.5 6.5" /></>,
-  'counsel-week': <><circle cx="5.5" cy="5" r="2" /><circle cx="10.5" cy="5" r="2" /><path d="M2 13c0-2 1.5-3.5 3.5-3.5S9 11 9 13M7 13c0-2 1.5-3.5 3.5-3.5S14 11 14 13" /></>,
-  'field-trip': <><rect x="2" y="3" width="12" height="11" rx="1.5" /><path d="M2 6.5h12M5 1.5v3M11 1.5v3M5 9.5h2M9 9.5h2" /></>,
-  'reply-collect': <><rect x="2.5" y="2.5" width="4.5" height="4.5" rx="1" /><rect x="9" y="2.5" width="4.5" height="4.5" rx="1" /><rect x="2.5" y="9" width="4.5" height="4.5" rx="1" /><path d="m9.5 11 1.5 1.5 2.5-3" /></>,
-  pumui: <><path d="M2.5 3.5h11v9h-11Z" /><path d="M5 6.5h6M5 9.5h3.5M10 9.5h1" /></>,
-  newsletter: <><path d="M2 4.5h12v8H2Z" /><path d="m2 4.5 6 4.5 6-4.5" /></>,
-  'label-maker': <><rect x="2.5" y="2.5" width="11" height="11" rx="1.5" /><path d="M2.5 8h11M8 2.5v11" /></>,
-}
-function Icon({ id }: { id: string }) {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" aria-hidden="true">
-      {ICONS[id]}
-    </svg>
-  )
-}
-
+const vars = (o: Record<string, string>) => o as React.CSSProperties
+const reduce = () => matchMedia('(prefers-reduced-motion: reduce)').matches
 
 export default function App() {
   const route = useRoute()
   const found = findTool(route)
   const area = found?.area
-  const color = area?.color ?? 'var(--manila)'
+  const root = useRef<HTMLDivElement>(null)
+
+  // 도구를 열 때: 파일철이 아래에서 올라오고, 제목·서류가 차례로 들어온다
+  useGSAP(() => {
+    if (reduce() || !found) return
+    gsap.from('.folder', { y: 40, opacity: 0, duration: .55, ease: 'power3.out' })
+    gsap.from('.folder .title-row > div > *', { y: 24, opacity: 0, duration: .5, stagger: .07, delay: .12, ease: 'power3.out' })
+    gsap.from('.folder .canvas > :not(.title-row)', { y: 30, opacity: 0, duration: .55, delay: .3, ease: 'power3.out' })
+  }, { scope: root, dependencies: [route] })
 
   return (
-    <div className="desk">
-      <header className="desk-top no-print">
-        <a className="brand" href="#">
-          <Mark />
-          <span><b>쌤툴</b><small>선생님 책상 위 잡업무 파일철</small></span>
-        </a>
-        <p className="desk-note">넣은 파일과 명단은 이 브라우저 안에서만 처리돼요. 서버로 올라가지 않아요.</p>
+    <div className="desk" ref={root}>
+      <header className="topbar no-print">
+        {found ? <a className="back" href="#">← 전체 파일철</a> : <span />}
+        <a className="brand" href="#">SSAMTOOL</a>
+        <span className="safe">파일과 명단은 이 브라우저 안에서만 처리돼요</span>
       </header>
 
-      <nav className="tabs no-print" aria-label="업무 영역">
-        <a className="tab" href="#" style={{ '--tc': 'var(--manila)' } as React.CSSProperties} aria-current={!found ? 'page' : undefined}>전체</a>
-        {AREAS.map(a => {
-          const first = a.tools.find(t => t.status === 'ready')
-          const ready = a.tools.filter(t => t.status === 'ready').length
-          return (
-            <a key={a.id} className="tab" href={first ? `#/${first.id}` : `#area-${a.id}`} style={{ '--tc': a.color } as React.CSSProperties} aria-current={area?.id === a.id ? 'page' : undefined}>
-              {a.name}<em className="num">{ready}</em>
-            </a>
-          )
-        })}
-      </nav>
-
-      <main className="folder" style={{ '--c': color } as React.CSSProperties}>
-        {found && SCREENS[found.tool.id] ? (
-          <div className="canvas">
-            <header className="title-row no-print">
-              <div>
-                <nav className="crumb" aria-label={`${found.area.name} 도구`}>
-                  {found.area.tools.map(t => t.status === 'ready'
-                    ? <a key={t.id} href={`#/${t.id}`} aria-current={t.id === found.tool.id ? 'page' : undefined}>{t.name}</a>
-                    : <span key={t.id}>{t.name} · 만드는 중</span>)}
-                </nav>
-                <h1>{found.tool.name}</h1>
-                <p>{found.tool.summary}</p>
-              </div>
-            </header>
-            {SCREENS[found.tool.id]()}
-          </div>
-        ) : (
-          <Home />
-        )}
-      </main>
+      {found && SCREENS[found.tool.id] ? (
+        <>
+          <nav className="area-tabs no-print" aria-label="업무 영역">
+            {AREAS.map(a => {
+              const first = a.tools.find(t => t.status === 'ready')
+              return (
+                <a key={a.id} className="ctab" href={first ? `#/${first.id}` : '#'} style={vars({ '--b': a.color, '--i': a.ink })} aria-current={area?.id === a.id ? 'page' : undefined}>{a.name}</a>
+              )
+            })}
+          </nav>
+          <main className="folder" style={vars({ '--c': area!.color, '--ci': area!.ink })}>
+            <div className="canvas">
+              <header className="title-row no-print">
+                <div>
+                  <nav className="crumb" aria-label={`${found.area.name} 도구`}>
+                    {found.area.tools.map(t => t.status === 'ready'
+                      ? <a key={t.id} href={`#/${t.id}`} aria-current={t.id === found.tool.id ? 'page' : undefined}>{t.name}</a>
+                      : <span key={t.id}>{t.name} · 만드는 중</span>)}
+                  </nav>
+                  <h1>{found.tool.name}</h1>
+                  <p>{found.tool.summary}</p>
+                </div>
+              </header>
+              {SCREENS[found.tool.id]()}
+            </div>
+          </main>
+        </>
+      ) : (
+        <Home />
+      )}
     </div>
   )
 }
 
+function Band({ a, open, onToggle }: { a: Area; open: boolean; onToggle: () => void }) {
+  const more = useRef<HTMLDivElement>(null)
+  const ready = a.tools.filter(t => t.status === 'ready')
+
+  // 띠를 누르면 안쪽 서류가 펼쳐지고 접힌다
+  useGSAP(() => {
+    const el = more.current!
+    if (reduce()) { el.style.height = open ? 'auto' : '0px'; return }
+    gsap.to(el, { height: open ? 'auto' : 0, duration: .5, ease: 'power3.inOut' })
+    if (open) gsap.from(el.querySelectorAll('.doc'), { y: 26, opacity: 0, duration: .45, stagger: .05, delay: .12, ease: 'power3.out' })
+  }, { dependencies: [open] })
+
+  return (
+    <section className={`band${open ? ' open' : ''}`} id={`area-${a.id}`} style={vars({ '--bb': a.color, '--bi': a.ink })}>
+      <div className="band-tabs">
+        {ready.map(t => <a key={t.id} className="ctab" href={`#/${t.id}`}>{t.name}</a>)}
+      </div>
+      <div className="band-body">
+        <button className="band-bar" aria-expanded={open} onClick={onToggle}>
+          <span className="ko">{a.name}</span>
+          <span className="en">{a.en} · {ready.length}/{a.tools.length} <span className="chev" aria-hidden="true">‹</span></span>
+        </button>
+        <div className="band-more" ref={more}>
+          <div className="band-inner">
+            {a.tools.map(t => t.status === 'ready' ? (
+              <a key={t.id} className="doc" href={`#/${t.id}`}>
+                <b>{t.name}</b>
+                <span>{t.summary}</span>
+                <span className="doc-foot">{t.formats?.join(' · ')}<span className="go">열기 →</span></span>
+              </a>
+            ) : (
+              <div key={t.id} className="doc soon">
+                <b>{t.name}</b>
+                <span>{t.summary}</span>
+                <span className="doc-foot" style={{ color: 'inherit' }}>만드는 중</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
 function Home() {
+  const scope = useRef<HTMLDivElement>(null)
+  const [open, setOpen] = useState<string | null>(AREAS[0].id)
   const all = AREAS.flatMap(a => a.tools)
   const ready = all.filter(t => t.status === 'ready').length
+
+  // 처음 열 때: 큰 제목이 올라오고, 띠가 아래에서부터 한 장씩 쌓인다
+  useGSAP(() => {
+    if (reduce()) return
+    gsap.from('.hero h1', { y: 60, opacity: 0, duration: .9, ease: 'power4.out' })
+    gsap.from('.hero p', { y: 20, opacity: 0, duration: .7, delay: .25, ease: 'power3.out' })
+    gsap.from('.band', { y: 80, opacity: 0, duration: .7, stagger: .08, delay: .3, ease: 'power3.out' })
+  }, { scope })
+
   return (
-    <div className="canvas">
-      <header className="title-row">
-        <div>
-          <h1>오늘 꺼낼 서류를 고르세요</h1>
-          <p>학교 잡업무를 영역별 파일철에 모았어요. 지금 {ready}개 도구를 쓸 수 있고, {all.length - ready}개를 만들고 있어요.</p>
-        </div>
+    <div ref={scope}>
+      <header className="hero">
+        <h1>Teacher's Files<span>선생님 잡업무 파일철</span></h1>
+        <p>공문·품의·가정통신문·라벨 출력까지, 학교 잡업무를 색깔 파일철에 모았어요. 지금 {ready}개 도구를 쓸 수 있고 {all.length - ready}개를 만들고 있어요.</p>
       </header>
-      <div className="stack-folders">
-        {AREAS.map(a => (
-          <section key={a.id} id={`area-${a.id}`} className="sf" style={{ '--c': a.color } as React.CSSProperties}>
-            <h2 className="sf-tab">{a.name}</h2>
-            <div className="sf-body">
-              {a.tools.map(t => t.status === 'ready' ? (
-                <a key={t.id} className="sheet-card" href={`#/${t.id}`}>
-                  <span className="sc-icon"><Icon id={t.id} /></span>
-                  <b>{t.name}</b>
-                  <span className="sc-sum">{t.summary}</span>
-                  <span className="sc-foot">{t.formats?.map(f => <i key={f}>{f}</i>)}<span className="go">열기 →</span></span>
-                </a>
-              ) : (
-                <div key={t.id} className="sheet-card soon">
-                  <b>{t.name}</b>
-                  <span className="sc-sum">{t.summary}</span>
-                  <span className="sc-foot"><span className="stamp">만드는 중</span></span>
-                </div>
-              ))}
-            </div>
-          </section>
-        ))}
+      <div className="bands">
+        {AREAS.map(a => <Band key={a.id} a={a} open={open === a.id} onToggle={() => setOpen(o => (o === a.id ? null : a.id))} />)}
       </div>
     </div>
   )

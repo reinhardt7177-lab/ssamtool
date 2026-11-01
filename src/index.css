@@ -1,21 +1,19 @@
-/* 방향: 파일철 책상 (레퍼런스: Mosby's Files — 색깔 인덱스 탭이 달린 파일철 더미)
-   교무실 책상의 초록 고무 매트 위에, 영역마다 색이 다른 파일철을 놓는다.
-   영역 = 파일철(색), 도구 = 파일철에서 꺼낸 서류(흰 종이). 탭 색끼리는 일부러 부딪치게 칠한다.
-   글꼴: 제목은 굵은 디스플레이(Black Han Sans), 본문은 Pretendard. */
+/* 방향: 레퍼런스 Mosby's Files 그대로 — 검은 바탕, 짙은 원색 띠, 곡선 탭, 초대형 압축 제목.
+   글꼴 세 가지가 맞부딪친다: 제목은 압축 고딕(Anton·Black Han Sans), 탭은 명조(Gowun Batang),
+   띠 오른쪽 작은 표기는 고정폭(IBM Plex Mono). 영역 = 색 띠, 도구 = 띠 위로 솟은 곡선 탭. */
 :root {
-  --desk: #2d5a4b;          /* 교무실 책상 매트 */
-  --desk-deep: #234a3d;
-  --desk-ink: #f4efe2;
-  --desk-muted: #b9cdc3;
-  --manila: #f1e6cc;        /* 기본 파일철(홈) */
-  --c: var(--manila);       /* 지금 열린 파일철 색 */
+  --night: #111111;
+  --night-ink: #f4f1ea;
+  --night-muted: #9b978e;
+  --c: #2b2b2b;             /* 지금 열린 띠 색 */
+  --ci: #ffffff;            /* 그 위 글자색 */
 
-  --ground: #fbf8f1;
-  --surface: #ffffff;
-  --raised: #f6f3ec;
-  --active: #ece6d8;
+  --ground: #f7f3ea;
+  --surface: #fffdf8;
+  --raised: #f2ede2;
+  --active: #e9e3d5;
   --border: #e4ddcd;
-  --rule: #efe9dc;
+  --rule: #ece6d8;
   --control: #cfc6b3;
   --text: #141414;
   --muted: #5d5a52;
@@ -25,7 +23,7 @@
   --data-soft: #dbe6f6;
   --positive: #247b50;
   --negative: #c4242a;
-  --pill-neutral-bg: #efe9dc; --pill-neutral-ink: #3d3a33;
+  --pill-neutral-bg: #ece6d8; --pill-neutral-ink: #3d3a33;
   --pill-positive-bg: #dcfae5; --pill-positive-ink: #04250e;
   --pill-negative-bg: #ffedea; --pill-negative-ink: #831c1e;
 
@@ -37,46 +35,53 @@
   --control-height: 36px;
   --fs-title: 24px; --fs-section: 16px; --fs-body: 14px; --fs-small: 12px;
   --font: "Pretendard Variable", "Pretendard", "Malgun Gothic", "Apple SD Gothic Neo", system-ui, sans-serif;
-  --display: "Black Han Sans", "Pretendard Variable", "Malgun Gothic", sans-serif;
+  --display: "Anton", "Black Han Sans", "Pretendard Variable", sans-serif;
+  --serif: "Gowun Batang", "Batang", serif;
+  --mono: "IBM Plex Mono", "Pretendard Variable", monospace;
   color-scheme: light;
 }
 
 * { box-sizing: border-box }
 html, body, #root { min-height: 100% }
-body { margin: 0; background: var(--desk); color: var(--text); font-family: var(--font); font-size: var(--fs-body); line-height: 20px; -webkit-font-smoothing: antialiased; word-break: keep-all; overflow-wrap: anywhere }
+body { margin: 0; background: var(--night); color: var(--text); font-family: var(--font); font-size: var(--fs-body); line-height: 20px; -webkit-font-smoothing: antialiased; word-break: keep-all; overflow-wrap: anywhere }
 button, input, select, textarea { font: inherit; color: inherit }
 button { cursor: pointer }
 button:disabled { cursor: default }
 .num { font-variant-numeric: tabular-nums }
-:focus-visible { outline: 2px solid var(--text); outline-offset: 2px }
+:focus-visible { outline: 2px solid #ffd84d; outline-offset: 2px }
 
-/* ── 책상 위 머리: 이름표와 색깔 탭 ── */
-.desk { min-height: 100vh; padding: 20px 28px 56px; display: grid; align-content: start; max-width: 1440px; margin: 0 auto }
-.desk-top { display: flex; align-items: center; justify-content: space-between; gap: 12px 24px; flex-wrap: wrap; padding: 0 4px 18px; color: var(--desk-ink) }
-.brand { display: flex; gap: 12px; align-items: center; text-decoration: none; color: var(--desk-ink) }
-.brand svg { flex: none }
-.brand b { display: block; font-family: var(--display); font-weight: 400; font-size: 30px; line-height: 32px; letter-spacing: -0.01em }
-.brand small { display: block; font-size: 13px; color: var(--desk-muted); line-height: 18px }
-.desk-note { margin: 0; font-size: 13px; color: var(--desk-muted); max-width: 46ch }
+/* ── 맨 위 이름 막대 ── */
+.desk { min-height: 100vh; max-width: 1480px; margin: 0 auto; padding: 0 28px 64px }
+.topbar { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; height: 64px; color: var(--night-ink); border-bottom: 1px solid #262626 }
+.topbar .brand { grid-column: 2; font-family: var(--display); font-size: 26px; letter-spacing: .02em; color: var(--night-ink); text-decoration: none; line-height: 1 }
+.topbar .back { justify-self: start; color: var(--night-muted); text-decoration: none; font-family: var(--mono); font-size: 12px }
+.topbar .back:hover { color: var(--night-ink) }
+.topbar .safe { justify-self: end; color: var(--night-muted); font-size: 12px; text-align: right; max-width: 30ch; line-height: 16px }
 
-.tabs { display: flex; gap: 2px; overflow-x: auto; padding: 0 8px; scrollbar-width: none; position: relative; z-index: 1 }
-.tabs::-webkit-scrollbar { display: none }
-.tab { --tc: var(--manila); flex: none; display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 22px; margin-bottom: -1px; background: var(--tc); color: #141414; text-decoration: none; font-weight: 700; font-size: 14px; clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 100%, 0 100%); transform: translateY(6px); transition: transform .15s ease; white-space: nowrap }
-.tab:hover { transform: translateY(2px) }
-.tab[aria-current="page"] { transform: none; height: 44px; font-size: 15px }
-.tab em { font-style: normal; font-weight: 500; font-size: 12px; opacity: .72 }
+/* ── 곡선 탭: 위는 둥글고 아래는 밖으로 휘어 띠에 붙는다 ── */
+.ctab { --b: #333; --i: #fff; position: relative; flex: none; display: inline-flex; align-items: center; gap: 8px; height: 46px; padding: 0 30px; background: var(--b); color: var(--i); border-radius: 22px 22px 0 0; font-family: var(--serif); font-weight: 700; font-size: 20px; text-decoration: none; white-space: nowrap; transition: transform .2s ease }
+.ctab::before, .ctab::after { content: ""; position: absolute; bottom: 0; width: 22px; height: 22px; pointer-events: none }
+.ctab::before { left: -22px; background: radial-gradient(circle at 0 0, transparent 21.5px, var(--b) 22px) } /* taste-skill-ignore: 탭 아래 곡선 */
+.ctab::after { right: -22px; background: radial-gradient(circle at 100% 0, transparent 21.5px, var(--b) 22px) } /* taste-skill-ignore: 탭 아래 곡선 */
+a.ctab:hover { transform: translateY(-4px) }
+.ctab small { font-family: var(--mono); font-size: 11px; font-weight: 500; opacity: .75 }
 
-/* ── 열린 파일철과 그 안의 서류 ── */
-.folder { background: var(--c); border-radius: 0 10px 10px 10px; padding: 26px 26px 30px; min-width: 0; display: grid; gap: 22px; align-content: start }
-.canvas { display: grid; gap: 22px; min-width: 0 }
-.title-row { display: flex; flex-wrap: wrap; gap: 8px 24px; align-items: end; justify-content: space-between }
-.title-row h1 { margin: 0; font-family: var(--display); font-weight: 400; font-size: clamp(30px, 3.4vw, 44px); line-height: 1.1; letter-spacing: -0.01em; text-wrap: balance }
-.title-row p { margin: 8px 0 0; color: #26241f; font-size: 15px; line-height: 22px; max-width: 68ch }
-.crumb { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px }
-.crumb a, .crumb span { font-size: 13px; text-decoration: none; color: #141414; background: rgba(255, 255, 255, .55); padding: 4px 10px; border-radius: 3px }
-.crumb a:hover { background: #fff }
-.crumb a[aria-current="page"] { background: #141414; color: #fff }
-.crumb span { opacity: .6 }
+/* ── 도구 화면: 영역 띠 하나가 화면 전체를 차지하는 파일철 ── */
+.area-tabs { display: flex; gap: 2px 26px; flex-wrap: nowrap; overflow-x: auto; padding: 22px 30px 0; scrollbar-width: none }
+.area-tabs::-webkit-scrollbar { display: none }
+.area-tabs .ctab { height: 38px; font-size: 15px; padding: 0 20px; opacity: .55 }
+.area-tabs .ctab[aria-current="page"] { opacity: 1; height: 44px; font-size: 17px }
+.area-tabs .ctab:hover { opacity: 1 }
+.folder { background: var(--c); color: var(--ci); border-radius: 14px; padding: 30px 30px 36px; min-width: 0; display: grid; gap: 26px; align-content: start }
+.canvas { display: grid; gap: 26px; min-width: 0 }
+.title-row { display: grid; gap: 14px }
+.title-row h1 { margin: 0; font-family: "Black Han Sans", var(--display); font-weight: 400; font-size: clamp(40px, 6vw, 84px); line-height: .98; letter-spacing: -0.01em; color: var(--ci); text-wrap: balance }
+.title-row p { margin: 0; font-family: var(--serif); font-size: 18px; line-height: 28px; color: var(--ci); opacity: .9; max-width: 62ch }
+.crumb { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-family: var(--mono); font-size: 12px }
+.crumb a, .crumb span { text-decoration: none; color: var(--ci); border: 1px solid currentColor; padding: 3px 10px; border-radius: 999px; opacity: .8 }
+.crumb a:hover { opacity: 1 }
+.crumb a[aria-current="page"] { background: var(--ci); color: var(--c); opacity: 1 }
+.crumb span { opacity: .45 }
 
 /* ── 판(panel) ── */
 .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-card); padding: var(--pad); display: grid; gap: 16px; align-content: start; min-width: 0 }
@@ -135,45 +140,61 @@ table.list tfoot td { border-top: 1px solid var(--border); font-weight: 600 }
 .cell-input { width: 100%; min-width: 160px; height: 32px; border: 1px solid var(--control); border-radius: var(--radius-control); padding: 0 8px; background: var(--surface) }
 .sub { display: block; font-size: 12px; color: var(--muted); line-height: 18px; margin-top: 2px }
 
-/* ── 홈: 파일철 더미 ── 파일철마다 탭이 엇갈리게 놓이고, 안에 서류 카드가 꽂혀 있다 */
-.stack-folders { display: grid; gap: 0 }
-.sf { --tab-x: 0px; position: relative; margin-top: -14px }
-.sf:first-child { margin-top: 0 }
-.sf:nth-child(7n+2) { --tab-x: 14% }
-.sf:nth-child(7n+3) { --tab-x: 28% }
-.sf:nth-child(7n+4) { --tab-x: 42% }
-.sf:nth-child(7n+5) { --tab-x: 56% }
-.sf:nth-child(7n+6) { --tab-x: 70% }
-.sf:nth-child(7n+7) { --tab-x: 8% }
-.sf-tab { margin: 0 0 0 var(--tab-x); display: inline-block; background: var(--c); color: #141414; font-family: var(--display); font-weight: 400; font-size: 22px; line-height: 1; padding: 13px 30px 11px; clip-path: polygon(14px 0, calc(100% - 14px) 0, 100% 100%, 0 100%) }
-.sf-body { background: var(--c); border-radius: 0 10px 10px 10px; padding: 18px 18px 30px; display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px; box-shadow: 0 -2px 0 rgba(0, 0, 0, .08) } /* taste-skill-ignore: 겹친 파일철 가장자리 */
-.sheet-card { position: relative; display: grid; grid-template-rows: auto auto 1fr auto; gap: 6px; text-decoration: none; color: #141414; background: #fffdf8; padding: 16px 18px 14px; border-radius: 3px; transition: transform .18s ease; min-height: 150px }
-.sheet-card::before { content: ""; position: absolute; top: -6px; left: 22px; width: 34px; height: 14px; border-radius: 3px; background: rgba(255, 255, 255, .7); outline: 1px solid rgba(0, 0, 0, .08) } /* 클립 */
-a.sheet-card:hover { transform: translateY(-4px) rotate(-.6deg) }
-.sheet-card b { font-size: 17px; line-height: 24px; font-weight: 800 }
-.sc-icon { color: #141414; display: inline-flex; width: 30px; height: 30px; align-items: center; justify-content: center; border: 1.5px solid #141414; border-radius: 50% }
-.sc-sum { color: #4a473f; font-size: 13.5px; line-height: 20px }
-.sc-foot { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; padding-top: 10px; border-top: 1px dashed #d9d0bd }
-.sc-foot i { font-style: normal; font-size: 12px; background: var(--c); padding: 1px 7px; border-radius: 3px; font-weight: 600 }
-.sc-foot .go { margin-left: auto; font-weight: 700 }
-.sheet-card.soon { background: rgba(255, 253, 248, .55); color: #3d3a33 }
-.sheet-card.soon b { font-weight: 700 }
-.stamp { margin-left: auto; font-size: 12px; font-weight: 800; color: #b3261e; border: 2px solid #b3261e; padding: 1px 8px; border-radius: 3px; transform: rotate(-4deg); letter-spacing: .02em }
+/* ── 홈: 초대형 제목 아래 색 띠 더미. 띠를 누르면 펼쳐진다 ── */
+.hero { text-align: center; padding: 56px 0 40px; color: var(--night-ink) }
+.hero h1 { margin: 0; font-family: var(--display); font-weight: 400; font-size: clamp(64px, 13.5vw, 210px); line-height: .86; letter-spacing: -0.005em; text-transform: uppercase }
+.hero h1 span { display: block; font-family: "Black Han Sans", var(--display); font-size: .42em; letter-spacing: .01em; margin-top: .18em }
+.hero p { margin: 26px auto 0; max-width: 46ch; font-family: var(--serif); font-size: 19px; line-height: 30px; color: var(--night-muted) }
 
-/* 도구 화면의 판도 파일철 안에 꽂힌 종이처럼 */
-.folder .panel { background: #fffdf8; border-color: transparent }
+.bands { display: grid; padding-top: 30px }
+.band { --b: #333; --i: #fff; position: relative; margin-top: -8px }
+.band-tabs { display: flex; gap: 0 34px; padding: 0 0 0 calc(var(--shift, 0) * 1%); position: relative; z-index: 1 }
+.band:nth-child(7n+1) { --shift: 2 }
+.band:nth-child(7n+2) { --shift: 22 }
+.band:nth-child(7n+3) { --shift: 8 }
+.band:nth-child(7n+4) { --shift: 34 }
+.band:nth-child(7n+5) { --shift: 14 }
+.band:nth-child(7n+6) { --shift: 40 }
+.band:nth-child(7n+7) { --shift: 4 }
+.band-tabs .ctab { --b: var(--bb); --i: var(--bi) }
+.band-body { background: var(--bb); color: var(--bi); border-radius: 6px 6px 0 0 }
+.band:last-child .band-body { border-radius: 6px }
+.band-bar { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 26px; min-height: 52px; border: 0; background: none; color: inherit; text-align: left }
+.band-bar .ko { font-family: "Black Han Sans", var(--display); font-size: 22px; letter-spacing: .01em }
+.band-bar .en { font-family: var(--mono); font-size: 12px; opacity: .85; display: inline-flex; align-items: center; gap: 10px }
+.band-bar .chev { display: inline-block; transition: transform .25s ease }
+.band.open .band-bar .chev { transform: rotate(-90deg) }
+.band-more { height: 0; overflow: hidden }
+.band-inner { padding: 4px 26px 30px; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px }
+.doc { display: grid; gap: 8px; align-content: start; text-decoration: none; color: var(--text); background: var(--surface); padding: 18px 20px; border-radius: 4px; transition: transform .2s ease }
+a.doc:hover { transform: translateY(-3px) }
+.doc b { font-family: var(--serif); font-size: 19px; line-height: 26px }
+.doc span { color: var(--muted); font-size: 13.5px; line-height: 20px }
+.doc .doc-foot { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; margin-top: 6px; font-family: var(--mono); font-size: 11px; color: var(--muted) }
+.doc .go { margin-left: auto; color: var(--text); font-family: var(--font); font-weight: 700; font-size: 13px }
+.doc.soon { background: transparent; color: var(--bi); border: 1px dashed currentColor; opacity: .75 }
+.doc.soon span { color: inherit }
+
+.folder .panel { background: var(--surface); border-color: transparent; color: var(--text) }
+.folder .note.on-folder { color: var(--ci) }
 
 /* 결과 막대: 이 앱의 유일한 색 */
 .meter { position: relative; height: 6px; border-radius: 3px; background: var(--rule); min-width: 80px }
 .meter > i { position: absolute; inset: 0 auto 0 0; border-radius: 3px; background: var(--data) }
 
 @media (max-width: 860px) {
-  .desk { padding: 14px 10px 40px }
-  .desk-note { display: none }
-  .folder { padding: 18px 14px 22px; border-radius: 0 8px 8px 8px }
+  .desk { padding: 0 10px 40px }
+  .topbar .safe { display: none }
+  .folder { padding: 20px 14px 24px; border-radius: 10px }
+  .area-tabs { padding: 16px 22px 0 }
   .grid-2, .grid-3 { grid-template-columns: 1fr }
-  .sf-tab { margin-left: 0; font-size: 19px; padding: 11px 22px 9px }
-  .sf-body { grid-template-columns: 1fr; padding: 14px 12px 24px }
+  .band { --shift: 3 !important }
+  .band-tabs { overflow-x: auto; scrollbar-width: none; padding-left: 26px; gap: 0 30px }
+  .band-tabs .ctab { font-size: 16px; height: 40px; padding: 0 18px }
+  .band-bar { padding: 12px 16px }
+  .band-bar .en { display: none }
+  .band-inner { grid-template-columns: 1fr; padding: 4px 12px 20px }
+  .hero { padding: 36px 0 20px }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important } }
 @media print {

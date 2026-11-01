@@ -12,14 +12,18 @@ export interface Tool {
 export interface Area {
   id: string
   name: string
-  color: string // 파일철 색: 탭끼리 일부러 부딪치게 고른 밝은 색
+  color: string // 파일철 색: 짙은 원색, 탭끼리 일부러 부딪치게
+  ink: string   // 그 색 위 글자색
+  en: string    // 띠 오른쪽 작은 영문 표기
   tools: Tool[]
 }
 
 export const AREAS: Area[] = [
   {
     id: 'files',
-    color: '#ff7a59',
+    color: '#2346d8',
+    ink: '#ffffff',
+    en: 'Documents & Files',
     name: '문서·파일',
     tools: [
       { id: 'doc-shrink', name: '문서 사진 용량 줄이기', summary: 'HWPX·워드·엑셀·PPT 속 사진만 줄여 첨부 용량을 맞춰요.', status: 'ready', formats: ['HWPX', 'DOCX', 'XLSX', 'PPTX'] },
@@ -29,7 +33,9 @@ export const AREAS: Area[] = [
   },
   {
     id: 'labels',
-    color: '#ffd84d',
+    color: '#0f6e62',
+    ink: '#ffffff',
+    en: 'Labels & Name Tags',
     name: '라벨·이름표',
     tools: [
       { id: 'label-maker', name: '라벨지·이름표 메이커', summary: '라벨지 규격을 고르고 명단과 사진을 넣어 바로 인쇄해요.', status: 'ready', formats: ['XLSX', 'CSV', '사진'] },
@@ -37,7 +43,9 @@ export const AREAS: Area[] = [
   },
   {
     id: 'gongmun',
-    color: '#6fa0ff',
+    color: '#6b2fa3',
+    ink: '#ffffff',
+    en: 'Official Letters',
     name: '공문서·행정',
     tools: [
       { id: 'gongmun-check', name: '공문 작성 규칙 검사', summary: '날짜·시간·금액·항목 기호·붙임·"끝." 표시를 검사하고 고쳐요.', status: 'ready', formats: ['본문 붙여넣기'] },
@@ -47,7 +55,9 @@ export const AREAS: Area[] = [
   },
   {
     id: 'plans',
-    color: '#4fd19b',
+    color: '#d7261e',
+    ink: '#ffffff',
+    en: 'Plans & Reports',
     name: '계획서·보고서',
     tools: [
       { id: 'plan-rewrite', name: '계획서 다시쓰기', summary: '작년 계획서로 올해 초안과 바뀐 곳 비교표를 만들어요.', status: 'soon' },
@@ -57,7 +67,9 @@ export const AREAS: Area[] = [
   },
   {
     id: 'finance',
-    color: '#ffa3d1',
+    color: '#f2c21b',
+    ink: '#141414',
+    en: 'Budget & Supplies',
     name: '재정·물품',
     tools: [
       { id: 'pumui', name: '품의 준비 도우미', summary: '품목만 넣으면 합계·금액 한글 표기·산출 기초·품의 본문이 만들어져요.', status: 'ready', formats: ['엑셀 붙여넣기', 'XLSX 저장'] },
@@ -67,7 +79,9 @@ export const AREAS: Area[] = [
   },
   {
     id: 'neis',
-    color: '#3fd0e0',
+    color: '#ece4d2',
+    ink: '#141414',
+    en: 'NEIS & Records',
     name: '나이스·학적 서류',
     tools: [
       { id: 'field-trip', name: '교외체험학습 서류', summary: '수업일 수를 세고 연간 허용 일수를 확인해 신청서·결과보고서를 만들어요.', status: 'ready', formats: ['인쇄·PDF'] },
@@ -76,7 +90,9 @@ export const AREAS: Area[] = [
   },
   {
     id: 'parents',
-    color: '#ffa53a',
+    color: '#e2571b',
+    ink: '#ffffff',
+    en: 'Families',
     name: '학부모 소통',
     tools: [
       { id: 'newsletter', name: '가정통신문 메이커', summary: '틀을 골라 내용만 채우면 회신서까지 붙은 가정통신문이 완성돼요.', status: 'ready', formats: ['인쇄·PDF', '한글 붙여넣기'] },
