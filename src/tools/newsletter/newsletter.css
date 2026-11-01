@@ -1,0 +1,20 @@
+.nl { display: grid; grid-template-columns: minmax(0, 1fr) minmax(460px, 0.95fr); gap: var(--gap); align-items: start }
+.nl textarea { resize: vertical }
+.tpl-tabs { display: flex; flex-wrap: wrap; gap: 6px }
+.tpl-tab { height: 32px; padding: 0 12px; border-radius: var(--radius-control); border: 1px solid var(--control); background: var(--surface); font-weight: 500 }
+.tpl-tab:hover { background: var(--raised) }
+.tpl-tab.on { background: var(--primary); border-color: var(--primary); color: #fff }
+.kv { display: grid; gap: 6px }
+.kv-row { display: grid; grid-template-columns: 110px minmax(0, 1fr) auto; gap: 6px; align-items: center }
+.kv-row input { height: 34px; border: 1px solid var(--control); border-radius: var(--radius-control); padding: 0 9px; background: var(--surface); font-weight: 400; min-width: 0 }
+
+.nl-preview { position: sticky; top: 16px; max-height: calc(100vh - 32px); overflow: auto; padding: 12px; background: var(--active); border-radius: var(--radius-card); display: grid; justify-items: center }
+.nl-sheet { width: 210mm; min-height: 297mm; padding: 15mm 18mm; background: #fff; zoom: .6; flex: none }
+
+@media (max-width: 1200px) { .nl { grid-template-columns: 1fr } .nl-preview { position: static; max-height: none } }
+@media print {
+  @page { size: A4 portrait; margin: 15mm 18mm }
+  .nl { display: block }
+  .nl-preview { display: block; padding: 0; background: none; overflow: visible; max-height: none; position: static }
+  .nl-sheet { zoom: 1; width: auto; min-height: 0; padding: 0 }
+}

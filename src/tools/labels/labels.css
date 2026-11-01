@@ -1,0 +1,35 @@
+.labels { display: grid; grid-template-columns: minmax(0, 1fr) minmax(420px, 0.9fr); gap: var(--gap); align-items: start }
+.two { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 16px }
+.label-form .field select { max-width: 100% }
+.two textarea { font-size: 13px; resize: vertical; tab-size: 12 }
+.lines { display: grid; gap: 8px }
+.field.grow { flex: 1 1 260px }
+.field.grow input { width: 100% }
+
+.preview { position: sticky; top: 16px; max-height: calc(100vh - 32px); overflow: auto; display: grid; gap: 14px; justify-items: center; padding: 12px; background: var(--active); border-radius: var(--radius-card) }
+.sheet { position: relative; background: #fff; color: #111; zoom: .62; flex: none }
+.cell { position: absolute; display: flex; gap: 2.5mm; padding: 2.5mm 3mm; overflow: hidden; line-height: 1.25 }
+.cell.bordered { outline: .2mm dashed #9a9a9a; outline-offset: -.1mm }
+.cell.photo-left { flex-direction: row; align-items: center }
+.cell.photo-top { flex-direction: column; align-items: center }
+.cell.text { align-items: center; justify-content: center }
+.cell.flip { transform: rotate(180deg) }
+.cell .txt { display: flex; flex-direction: column; justify-content: center; flex: 1 1 auto; min-width: 0; min-height: 0; overflow-wrap: anywhere }
+.cell.photo-top .txt { flex: 0 0 auto; align-items: center }
+.cell .pic { flex: none; display: grid; place-items: center; overflow: hidden; border-radius: 1.5mm; background: #f1f1f1 }
+.cell.photo-left .pic { height: 100%; aspect-ratio: 3 / 4 }
+.cell.photo-top .pic { flex: 1 1 0; min-height: 0; aspect-ratio: 3 / 4 }
+.cell .pic img { width: 100%; height: 100%; object-fit: cover; display: block }
+.cell .pic span { font-size: 9pt; color: #999 }
+
+@media (max-width: 1200px) { .labels { grid-template-columns: 1fr } .preview { position: static; max-height: none } }
+@media print {
+  @page { size: A4 portrait; margin: 0 }
+  .labels { display: block }
+  .preview { display: block; padding: 0; background: none; overflow: visible; max-height: none; position: static }
+  .sheet { zoom: 1; box-shadow: none; page-break-after: always; break-after: page; overflow: hidden }
+  .sheet:last-child { page-break-after: auto; break-after: auto }
+  .cell .pic { background: none }
+  .cell .pic span { visibility: hidden }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact }
+}
