@@ -21,7 +21,7 @@ export interface Area {
 export const AREAS: Area[] = [
   {
     id: 'files',
-    color: '#2346d8',
+    color: '#1e4bd7',
     ink: '#ffffff',
     en: 'Documents & Files',
     name: '문서·파일',
@@ -33,7 +33,7 @@ export const AREAS: Area[] = [
   },
   {
     id: 'labels',
-    color: '#0f6e62',
+    color: '#0c7866',
     ink: '#ffffff',
     en: 'Labels & Name Tags',
     name: '라벨·이름표',
@@ -43,7 +43,7 @@ export const AREAS: Area[] = [
   },
   {
     id: 'gongmun',
-    color: '#6b2fa3',
+    color: '#581e70',
     ink: '#ffffff',
     en: 'Official Letters',
     name: '공문서·행정',
@@ -55,7 +55,7 @@ export const AREAS: Area[] = [
   },
   {
     id: 'plans',
-    color: '#d7261e',
+    color: '#d71e1e',
     ink: '#ffffff',
     en: 'Plans & Reports',
     name: '계획서·보고서',
@@ -67,8 +67,8 @@ export const AREAS: Area[] = [
   },
   {
     id: 'finance',
-    color: '#f2c21b',
-    ink: '#141414',
+    color: '#ffe927',
+    ink: '#000000',
     en: 'Budget & Supplies',
     name: '재정·물품',
     tools: [
@@ -79,8 +79,8 @@ export const AREAS: Area[] = [
   },
   {
     id: 'neis',
-    color: '#ece4d2',
-    ink: '#141414',
+    color: '#000000',
+    ink: '#ffffff',
     en: 'NEIS & Records',
     name: '나이스·학적 서류',
     tools: [
@@ -90,7 +90,7 @@ export const AREAS: Area[] = [
   },
   {
     id: 'parents',
-    color: '#e2571b',
+    color: '#e8571b',
     ink: '#ffffff',
     en: 'Families',
     name: '학부모 소통',

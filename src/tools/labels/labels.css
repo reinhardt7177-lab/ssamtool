@@ -6,7 +6,7 @@
 .field.grow { flex: 1 1 260px }
 .field.grow input { width: 100% }
 
-.preview { position: sticky; top: 16px; max-height: calc(100vh - 32px); overflow: auto; display: grid; gap: 14px; justify-items: center; padding: 12px; background: var(--active); border-radius: var(--radius-card) }
+.preview { position: sticky; top: 76px; max-height: calc(100vh - 92px); overflow: auto; display: grid; gap: 14px; justify-items: center; padding: 12px; background: var(--active); border-radius: var(--radius-card) }
 .sheet { position: relative; background: #fff; color: #111; zoom: .62; flex: none }
 .cell { position: absolute; display: flex; gap: 2.5mm; padding: 2.5mm 3mm; overflow: hidden; line-height: 1.25 }
 .cell.bordered { outline: .2mm dashed #9a9a9a; outline-offset: -.1mm }

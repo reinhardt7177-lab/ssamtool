@@ -8,7 +8,7 @@
 .kv-row { display: grid; grid-template-columns: 110px minmax(0, 1fr) auto; gap: 6px; align-items: center }
 .kv-row input { height: 34px; border: 1px solid var(--control); border-radius: var(--radius-control); padding: 0 9px; background: var(--surface); font-weight: 400; min-width: 0 }
 
-.nl-preview { position: sticky; top: 16px; max-height: calc(100vh - 32px); overflow: auto; padding: 12px; background: var(--active); border-radius: var(--radius-card); display: grid; justify-items: center }
+.nl-preview { position: sticky; top: 76px; max-height: calc(100vh - 92px); overflow: auto; padding: 12px; background: var(--active); border-radius: var(--radius-card); display: grid; justify-items: center }
 .nl-sheet { width: 210mm; min-height: 297mm; padding: 15mm 18mm; background: #fff; zoom: .6; flex: none }
 
 @media (max-width: 1200px) { .nl { grid-template-columns: 1fr } .nl-preview { position: static; max-height: none } }
