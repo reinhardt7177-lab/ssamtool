@@ -65,7 +65,7 @@ function Split({ text }: { text: string }) {
     <span className="split" aria-label={text}>
       {text.split(' ').map((w, i, all) => (
         <span key={i} aria-hidden="true">
-          <span className="w">{[...w].map((c, k) => <span key={k} className="ch">{c}</span>)}</span>
+          <span className="w">{[...w].map((c, k) => <span key={k} className="ch" style={vars({ '--i': String(text.split(' ').slice(0, i).join('').length + k) })}>{c}</span>)}</span>
           {i < all.length - 1 && ' '}
         </span>
       ))}
@@ -111,6 +111,17 @@ function Case({ areaId, toolId }: { areaId: string; toolId: string }) {
   const tool = area.tools.find(t => t.id === toolId)!
   const root = useRef<HTMLDivElement>(null)
   const [showNext, setShowNext] = useState(false)
+  const [tagsLen, setTagsLen] = useState(0)
+
+  // 세로 탭 줄이 파일철 밖으로 삐져나오지 않도록, 파일철 높이를 탭 줄 길이 이상으로 둔다
+  useEffect(() => {
+    const el = root.current?.querySelector('.side-tags') as HTMLElement | null
+    if (!el) return
+    setTagsLen(el.offsetWidth)
+    const ro = new ResizeObserver(() => setTagsLen(el.offsetWidth))
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
   const idx = READY.findIndex(r => r.tool.id === toolId)
   const next = READY[(idx + 1) % READY.length]
 
@@ -131,7 +142,7 @@ function Case({ areaId, toolId }: { areaId: string; toolId: string }) {
       .set('.cover', { display: 'none' })
       .from('.case-title .ch', { xPercent: -150, opacity: 0, duration: .8, stagger: .025, ease: 'power4.out' }, .15)
       .from('.case-meta', { y: 16, opacity: 0, duration: .6, ease: 'power3.out' }, .5)
-      .from('.side-tags .tag', { y: '110%', duration: .6, stagger: .06, ease: 'power3.out' }, .85)
+      .from('.side-tags .tag', { y: '110%', duration: .6, stagger: .06, ease: 'power3.out', clearProps: 'transform' }, .85)
       .from('.paper__body > *', { y: 40, opacity: 0, duration: .7, stagger: .08, ease: 'power3.out' }, 1.1)
   }, { scope: root })
 
@@ -152,7 +163,7 @@ function Case({ areaId, toolId }: { areaId: string; toolId: string }) {
             return first ? <Tag key={a.id} href={`#/${first.id}`} bg={a.color} fg={a.ink} current={a.id === area.id}>{a.name}</Tag> : null
           })}
         </nav>
-        <div className="case-folder__inner">
+        <div className="case-folder__inner" style={{ minHeight: tagsLen ? tagsLen + 24 : undefined }}>
           <div className="paper">
             <div className="paper__clip no-print" aria-hidden="true">{Array.from({ length: 6 }, (_, i) => <span key={i} />)}</div>
             <svg className="paperclip no-print" viewBox="0 0 24 107" aria-hidden="true"><path d="M17 20v62a7 7 0 0 1-14 0V12a9 9 0 0 1 18 0v66a3.5 3.5 0 0 1-7 0V22" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" /></svg>
@@ -185,14 +196,14 @@ function Band({ a, i, open, hover, onToggle, onHover, onLeave, onOpenTool }: {
     const el = more.current!
     if (reduce()) { el.style.height = open ? 'auto' : '0px'; return }
     gsap.to(el, { height: open ? 'auto' : 0, duration: .65, ease: 'power3.out' })
-    if (open) gsap.from(el.querySelectorAll('.doc'), { y: 30, opacity: 0, duration: .5, stagger: .05, delay: .1, ease: 'power3.out' })
+    if (open) gsap.from(el.querySelectorAll('.doc'), { y: 30, opacity: 0, duration: .5, stagger: .05, delay: .1, ease: 'power3.out', clearProps: 'transform,opacity' })
   }, { dependencies: [open] })
 
   return (
     <section
       className={`band${open ? ' open' : ''}${hover !== null && i > hover ? ' is-rotated' : ''}${hover === i ? ' is-hover' : ''}`}
       id={`area-${a.id}`}
-      style={vars({ '--bb': a.color, '--bi': a.ink })}
+      style={vars({ '--bb': a.color, '--bi': a.ink, '--i': String(i) })}
       onMouseEnter={() => onHover(i)}
       onMouseLeave={onLeave}
     >
@@ -234,14 +245,8 @@ function Home() {
   const all = AREAS.flatMap(a => a.tools)
   const ready = all.filter(t => t.status === 'ready').length
 
-  // 처음 열 때: 제목 글자가 아래에서 솟고, 띠 묶음이 크게 날아와 쌓인다 (레퍼런스: yPercent 200, scale 1.75)
-  useGSAP(() => {
-    if (reduce()) return
-    gsap.from('.hero .ch', { yPercent: 100, duration: .9, stagger: .02, ease: 'power4.out' })
-    gsap.from('.hero p', { y: 32, opacity: 0, duration: .8, delay: .9, ease: 'power3.out' })
-    gsap.from('.bands-stack', { yPercent: -10, duration: 1.1, ease: 'power4.out', delay: .2 })
-    gsap.from('.band', { yPercent: 200, scale: 1.75, duration: .9, stagger: .05, delay: .25, ease: 'power4.out' })
-  }, { scope })
+  // 처음 등장(제목 글자가 솟고 띠가 크게 날아와 쌓이는 것)은 CSS 애니메이션으로 한다.
+  // 띠에는 마우스용 CSS 전환이 있어 GSAP 값이 남으면 띠가 확대된 채 멈출 수 있었다.
 
   // 도구를 고르면: 다른 띠는 아래로 빠지고 제목은 흩어진 뒤 이동한다
   const { contextSafe } = useGSAP({ scope })

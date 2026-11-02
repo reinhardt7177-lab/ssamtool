@@ -87,7 +87,10 @@ a.tag:hover { transform: translateY(-6px) }
 .case-folder { position: relative; margin-right: calc(var(--tag-h) + 8px) }
 .case-folder__inner { position: relative; background: var(--c); border-radius: 0 0 6px 6px; padding: clamp(18px, 3vw, 40px); perspective: 2400px }
 .side-tags { position: absolute; top: 0; right: 0; display: flex; gap: 0; transform: translate(100%, -100%) rotate(90deg); transform-origin: left bottom; padding-left: 26px; z-index: 2 }
-.side-tags .tag { --tag-h: 2.6rem; margin-left: calc(var(--tag-h) * -0.9) }
+.side-tags .tag { --tag-h: 2.3rem; margin-left: calc(var(--tag-h) * -0.9) }
+.side-tags .tag__mid { font-size: 1rem }
+.side-tags .tag[aria-current="page"] { transform: translateY(-8px) }
+.side-tags .tag[aria-current="page"] .tag__mid { text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 2px }
 .side-tags .tag:first-child { margin-left: 0 }
 .side-tags .tag[aria-current="page"] { z-index: 1 }
 .side-tags a.tag:hover { transform: translateY(-10px) }
@@ -178,6 +181,14 @@ table.list tfoot td { border-top: 1px solid var(--border); font-weight: 600 }
 .hero h1 .ko { display: block; font-family: var(--display-ko); font-size: .4em; line-height: 1.1; margin-top: .22em }
 .hero p { margin: 26px auto 0; max-width: 46ch; font-family: var(--serif); font-size: 19px; line-height: 30px; color: var(--night-muted) }
 
+/* 첫 등장: 제목 글자가 가림막 아래에서 솟고(0.9초), 띠가 크게 날아와 쌓인다 (레퍼런스 yPercent 200, scale 1.75) */
+@keyframes rise-char { from { transform: translateY(100%) } to { transform: none } }
+@keyframes band-in { from { transform: translateY(200%) scale(1.75) } to { transform: none } }
+@keyframes fade-up { from { transform: translateY(32px); opacity: 0 } to { transform: none; opacity: 1 } }
+.hero .ch { animation: rise-char .9s cubic-bezier(.16, 1, .3, 1) backwards; animation-delay: calc(var(--i, 0) * 20ms) }
+.hero p { animation: fade-up .8s cubic-bezier(.33, 1, .68, 1) .9s backwards }
+.band { animation: band-in .9s cubic-bezier(.16, 1, .3, 1) backwards; animation-delay: calc(.25s + var(--i, 0) * 50ms) }
+@media (prefers-reduced-motion: reduce) { .hero .ch, .hero p, .band { animation: none } }
 /* 글자 단위로 솟는 제목: 줄마다 가림막, 글자는 아래에서 */
 .split { display: inline-block }
 .split .w { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: .04em }
