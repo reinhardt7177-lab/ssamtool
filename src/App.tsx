@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
 import { useGSAP } from '@gsap/react'
 import Lenis from 'lenis'
@@ -112,14 +112,20 @@ function Case({ areaId, toolId }: { areaId: string; toolId: string }) {
   const root = useRef<HTMLDivElement>(null)
   const [showNext, setShowNext] = useState(false)
   const [tagsLen, setTagsLen] = useState(0)
+  const [folderH, setFolderH] = useState(0)
 
-  // 세로 탭 줄이 파일철 밖으로 삐져나오지 않도록, 파일철 높이를 탭 줄 길이 이상으로 둔다
-  useEffect(() => {
-    const el = root.current?.querySelector('.side-tags') as HTMLElement | null
-    if (!el) return
-    setTagsLen(el.offsetWidth)
-    const ro = new ResizeObserver(() => setTagsLen(el.offsetWidth))
-    ro.observe(el)
+  // 세로 탭(인덱스)이 파일철 오른쪽 끝에서 끝까지 이어지게 한다.
+  // 1) 탭이 원래 차지하는 길이를 먼저 재서 파일철을 그보다 짧지 않게 하고
+  // 2) 파일철 높이가 정해지면 탭 줄을 그 길이로 늘려 탭들이 나눠 채운다
+  useLayoutEffect(() => {
+    const tags = root.current?.querySelector('.side-tags') as HTMLElement | null
+    const inner = root.current?.querySelector('.case-folder__inner') as HTMLElement | null
+    if (!tags || !inner) return
+    setTagsLen(tags.offsetWidth)
+    const measure = () => setFolderH(inner.offsetHeight)
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(inner)
     return () => ro.disconnect()
   }, [])
   const idx = READY.findIndex(r => r.tool.id === toolId)
@@ -157,7 +163,7 @@ function Case({ areaId, toolId }: { areaId: string; toolId: string }) {
       </div>
 
       <div className="case-folder" style={vars({ '--c': area.color, '--ci': area.ink })}>
-        <nav className="side-tags no-print" aria-label="다른 영역">
+        <nav className="side-tags no-print" aria-label="다른 영역" style={{ width: folderH && tagsLen ? Math.max(folderH, tagsLen) : undefined }}>
           {AREAS.map(a => {
             const first = a.tools.find(t => t.status === 'ready')
             return first ? <Tag key={a.id} href={`#/${first.id}`} bg={a.color} fg={a.ink} current={a.id === area.id}>{a.name}</Tag> : null

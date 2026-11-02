@@ -89,7 +89,9 @@ a.tag:hover { transform: translateY(-6px) }
 .side-tags { position: absolute; top: 0; right: 0; display: flex; gap: 0; transform: translate(100%, -100%) rotate(90deg); transform-origin: left bottom; padding-left: 26px; z-index: 2 }
 .side-tags .tag { --tag-h: 2.3rem; margin-left: calc(var(--tag-h) * -0.9) }
 .side-tags .tag__mid { font-size: 1rem }
-.side-tags .tag[aria-current="page"] { transform: translateY(-8px) }
+/* 탭 줄이 파일철 길이만큼 늘면 탭들이 나눠 채운다 */
+.side-tags .tag { flex: 1 1 auto }
+.side-tags .tag__mid { flex: 1; justify-content: center }
 .side-tags .tag[aria-current="page"] .tag__mid { text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 2px }
 .side-tags .tag:first-child { margin-left: 0 }
 .side-tags .tag[aria-current="page"] { z-index: 1 }
