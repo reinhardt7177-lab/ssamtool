@@ -208,6 +208,8 @@ table.list tfoot td { border-top: 1px solid var(--border); font-weight: 600 }
 .band-body::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: #fff; opacity: 0; pointer-events: none; transition: opacity .65s var(--ease) }
 .band.is-hover .band-body::after { opacity: .05 }
 .band:last-child .band-body { border-radius: 4px; padding-bottom: 0 }
+/* 마우스를 올리면 뒤 띠들이 젖혀지며 1rem 내려간다. 그때 틈이 보이지 않도록 띠 색을 아래로 조금 더 깔아 둔다 */
+.band:not(:last-child) .band-body::before { content: ""; position: absolute; left: 0; right: 0; top: calc(100% - 2px); height: 2.5rem; background: var(--bb); pointer-events: none }
 .band-bar { width: 100%; display: flex; align-items: center; justify-content: flex-end; gap: 16px; padding: 14px 34px; min-height: 52px; border: 0; background: none; color: inherit; text-align: right }
 .band-bar .en { font-family: var(--mono); font-size: clamp(.75rem, .55rem + .5vw, 1rem); display: inline-flex; align-items: center; gap: 10px }
 .band-bar .chev { display: inline-block; transition: transform .65s var(--ease) }
