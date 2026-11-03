@@ -86,7 +86,7 @@ a.tag:hover { transform: translateY(-6px) }
 
 .case-folder { position: relative; margin-right: calc(var(--side-h, 2.3rem) + 8px) }
 .case-folder__inner { position: relative; background: var(--c); border-radius: 0 0 6px 6px; padding: clamp(18px, 3vw, 40px); perspective: 2400px }
-.side-rail { position: absolute; top: 0; bottom: 0; left: 100%; width: var(--side-h) }
+.side-rail { position: absolute; top: 0; bottom: 0; left: calc(100% - 3px); width: var(--side-h); z-index: 2 }
 .side-sticky { position: sticky; top: 72px }
 .case-folder { --side-h: 37px }
 .side-tags { position: absolute; top: 0; left: 0; display: flex; transform-origin: left top; transform: rotate(90deg) translateY(-100%); z-index: 2 }
@@ -241,7 +241,8 @@ a.doc:hover { transform: translateY(-6px) rotate(-.6deg) }
   .case { padding-top: 24px }
   .case-folder { margin-right: 0 }
   .side-rail, .side-sticky { position: static; width: auto; height: auto !important }
-  .side-tags { position: static; transform: none; overflow-x: auto; scrollbar-width: none; padding-left: 18px }
+  .side-tags { position: relative; z-index: 2; transform: none; overflow-x: auto; scrollbar-width: none; padding-left: 18px; margin-bottom: -4px }
+  .case-folder__inner { border-top-left-radius: 0 }
   .case-folder__inner { padding: 10px; border-radius: 6px }
   .paper { grid-template-columns: 26px minmax(0, 1fr) }
   .next-card { display: none }
