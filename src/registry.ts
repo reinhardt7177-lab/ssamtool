@@ -15,12 +15,16 @@ export interface Area {
   color: string // 파일철 색: 짙은 원색, 탭끼리 일부러 부딪치게
   ink: string   // 그 색 위 글자색
   en: string    // 띠 오른쪽 작은 영문 표기
+  short: string // 도구 화면 오른쪽 세로 인덱스용 짧은 이름
+  desc: string  // 띠를 펼쳤을 때 보이는 한두 문장
   tools: Tool[]
 }
 
 export const AREAS: Area[] = [
   {
     id: 'files',
+    short: '문서',
+    desc: '첨부 용량이 넘치는 한글·워드 파일, 여기저기 흩어진 PDF와 사진. 공문에 붙이기 전에 한 번에 줄이고 묶어요.',
     color: '#1e4bd7',
     ink: '#ffffff',
     en: 'Documents & Files',
@@ -33,6 +37,8 @@ export const AREAS: Area[] = [
   },
   {
     id: 'labels',
+    short: '라벨',
+    desc: '사물함·신발장·책상 이름표부터 회의 명패까지. 라벨지 규격을 고르고 명단과 사진을 넣으면 칸에 맞춰 인쇄돼요.',
     color: '#0c7866',
     ink: '#ffffff',
     en: 'Labels & Name Tags',
@@ -43,6 +49,8 @@ export const AREAS: Area[] = [
   },
   {
     id: 'gongmun',
+    short: '공문',
+    desc: '날짜·시간·금액 표기, 항목 기호 순서, 붙임과 끝 표시. 상신하기 전에 공문서 작성 규칙을 한 번에 확인해요.',
     color: '#581e70',
     ink: '#ffffff',
     en: 'Official Letters',
@@ -55,6 +63,8 @@ export const AREAS: Area[] = [
   },
   {
     id: 'plans',
+    short: '계획',
+    desc: '해마다 다시 쓰는 계획서와 결과보고, 영역별로 채워야 하는 안전교육 시수. 작년 것을 바탕으로 빠르게 정리해요.',
     color: '#d71e1e',
     ink: '#ffffff',
     en: 'Plans & Reports',
@@ -67,6 +77,8 @@ export const AREAS: Area[] = [
   },
   {
     id: 'finance',
+    short: '재정',
+    desc: '견적서와 장바구니를 품목 내역으로, 합계는 한글 금액으로. 품의 본문과 산출 기초까지 한 번에 만들어요.',
     color: '#ffe927',
     ink: '#000000',
     en: 'Budget & Supplies',
@@ -79,6 +91,8 @@ export const AREAS: Area[] = [
   },
   {
     id: 'neis',
+    short: '나이스',
+    desc: '교외체험학습 신청서와 결과보고서, 수업일 계산과 연간 허용 일수 확인. 나이스에 올리기 전 서류를 갖춰요.',
     color: '#000000',
     ink: '#ffffff',
     en: 'NEIS & Records',
@@ -90,6 +104,8 @@ export const AREAS: Area[] = [
   },
   {
     id: 'parents',
+    short: '학부모',
+    desc: '가정통신문을 쓰고, 회신서를 걷고, 상담주간 시간을 나눠요. 학부모와 주고받는 종이를 한곳에서 처리해요.',
     color: '#e8571b',
     ink: '#ffffff',
     en: 'Families',

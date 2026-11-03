@@ -112,20 +112,15 @@ function Case({ areaId, toolId }: { areaId: string; toolId: string }) {
   const root = useRef<HTMLDivElement>(null)
   const [showNext, setShowNext] = useState(false)
   const [tagsLen, setTagsLen] = useState(0)
-  const [folderH, setFolderH] = useState(0)
 
-  // 세로 탭(인덱스)이 파일철 오른쪽 끝에서 끝까지 이어지게 한다.
-  // 1) 탭이 원래 차지하는 길이를 먼저 재서 파일철을 그보다 짧지 않게 하고
-  // 2) 파일철 높이가 정해지면 탭 줄을 그 길이로 늘려 탭들이 나눠 채운다
+  // 세로 인덱스는 화면을 따라 내려오며 늘 전부 보인다. 파일철이 인덱스보다 짧아지지 않게만 맞춘다.
   useLayoutEffect(() => {
     const tags = root.current?.querySelector('.side-tags') as HTMLElement | null
-    const inner = root.current?.querySelector('.case-folder__inner') as HTMLElement | null
-    if (!tags || !inner) return
-    setTagsLen(tags.offsetWidth)
-    const measure = () => setFolderH(inner.offsetHeight)
+    if (!tags) return
+    const measure = () => setTagsLen(tags.offsetWidth)
     measure()
     const ro = new ResizeObserver(measure)
-    ro.observe(inner)
+    ro.observe(tags)
     return () => ro.disconnect()
   }, [])
   const idx = READY.findIndex(r => r.tool.id === toolId)
@@ -163,12 +158,13 @@ function Case({ areaId, toolId }: { areaId: string; toolId: string }) {
       </div>
 
       <div className="case-folder" style={vars({ '--c': area.color, '--ci': area.ink })}>
-        <nav className="side-tags no-print" aria-label="다른 영역" style={{ width: folderH && tagsLen ? Math.max(folderH, tagsLen) : undefined }}>
+        <div className="side-rail no-print"><div className="side-sticky" style={{ height: tagsLen || undefined }}>
+        <nav className="side-tags" aria-label="다른 영역">
           {AREAS.map(a => {
             const first = a.tools.find(t => t.status === 'ready')
-            return first ? <Tag key={a.id} href={`#/${first.id}`} bg={a.color} fg={a.ink} current={a.id === area.id}>{a.name}</Tag> : null
+            return first ? <Tag key={a.id} href={`#/${first.id}`} bg={a.color} fg={a.ink} current={a.id === area.id}>{a.short}</Tag> : null
           })}
-        </nav>
+        </nav></div></div>
         <div className="case-folder__inner" style={{ minHeight: tagsLen ? tagsLen + 24 : undefined }}>
           <div className="paper">
             <div className="paper__clip no-print" aria-hidden="true">{Array.from({ length: 6 }, (_, i) => <span key={i} />)}</div>
@@ -189,6 +185,13 @@ function Case({ areaId, toolId }: { areaId: string; toolId: string }) {
       </a>
     </div>
   )
+}
+
+const PALETTE = AREAS.map(x => ({ color: x.color, ink: x.ink }))
+function tabColor(a: Area, k: number) {
+  if (k === 0) return { color: a.color, ink: a.ink }
+  const others = PALETTE.filter(p => p.color !== a.color)
+  return others[(AREAS.indexOf(a) * 2 + k) % others.length]
 }
 
 function Band({ a, i, open, hover, onToggle, onHover, onLeave, onOpenTool }: {
@@ -214,14 +217,14 @@ function Band({ a, i, open, hover, onToggle, onHover, onLeave, onOpenTool }: {
       onMouseLeave={onLeave}
     >
       <div className="band-tabs" onClick={e => { const t = (e.target as HTMLElement).closest('a.tag') as HTMLAnchorElement | null; if (t) onOpenTool(e, t.hash.replace('#/', '')) }}>
-        {ready.map(t => <Tag key={t.id} href={`#/${t.id}`} bg={a.color} fg={a.ink}>{t.name}</Tag>)}
+        {ready.map((t, k) => { const c = tabColor(a, k); return <Tag key={t.id} href={`#/${t.id}`} bg={c.color} fg={c.ink}>{t.name}</Tag> })}
       </div>
       <div className="band-body">
         <button className="band-bar" aria-expanded={open} onClick={onToggle}>
-          <span className="ko">{a.name}</span>
-          <span className="en">{a.en} · {ready.length}/{a.tools.length} <span className="chev" aria-hidden="true">‹</span></span>
+          <span className="en">{a.name} · {a.en} <span className="chev" aria-hidden="true">‹</span></span>
         </button>
         <div className="band-more" ref={more}>
+          <p className="band-desc">{a.desc}</p>
           <div className="band-inner">
             {a.tools.map(t => t.status === 'ready' ? (
               <a key={t.id} className="doc" href={`#/${t.id}`} onClick={e => onOpenTool(e, t.id)}>
