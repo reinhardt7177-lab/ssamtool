@@ -1,11 +1,24 @@
 import { useState } from 'react'
 import * as XLSX from 'xlsx'
 import { downloadBlob } from '../../lib/files'
+import { htmlToHwpx } from '../../lib/hwp'
 import { amountOf, basisLine, moneyText, parseItems, pumuiBody, SAMPLE_ITEMS, won, type Item, type Meta } from './items'
 
 const EMPTY: Item = { name: '', spec: '', unit: '개', qty: 1, price: 0 }
 // 지방계약법 시행령 제30조: 추정가격 2천만 원 이하는 1인 견적 수의계약
 const ONE_QUOTE_LIMIT = 20_000_000
+
+const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+const TD = 'border:1px solid #000;padding:3pt 5pt'
+
+// 품의 제목·본문 뒤에 붙임(물품 구입 내역) 표를 이어 붙인 한글 문서용 HTML
+function pumuiHtml(title: string, body: string, items: Item[], total: number) {
+  const lines = body.split('\n').map(l => `<p>${esc(l).replace(/^ +/, m => '&nbsp;'.repeat(m.length * 2)) || '&nbsp;'}</p>`).join('')
+  const rows = items.map(i => `<tr><td style="${TD}">${esc(i.name)}</td><td style="${TD}">${esc(i.spec)}</td><td style="${TD};text-align:center">${esc(i.unit)}</td><td style="${TD};text-align:right">${won(i.qty)}</td><td style="${TD};text-align:right">${won(i.price)}</td><td style="${TD};text-align:right">${won(amountOf(i))}</td></tr>`).join('')
+  const head = ['품명', '규격', '단위', '수량', '단가(원)', '금액(원)'].map(h => `<td style="${TD};text-align:center;font-weight:bold;background:#eee">${h}</td>`).join('')
+  return `<p style="font-size:15pt;font-weight:bold">${esc(title)}</p>${lines}<p>&nbsp;</p><p style="font-weight:bold">[붙임] 물품 구입 내역</p>`
+    + `<table style="border-collapse:collapse;width:100%"><tr>${head}</tr>${rows}<tr><td style="${TD};text-align:center;font-weight:bold" colspan="5">합계</td><td style="${TD};text-align:right;font-weight:bold">${won(total)}</td></tr></table>`
+}
 
 export function Pumui() {
   const [items, setItems] = useState<Item[]>(SAMPLE_ITEMS)
@@ -36,6 +49,14 @@ export function Pumui() {
   const body = pumuiBody(meta, items)
   const basis = items.map(basisLine).join('\n') + `\n합계: ${won(total)}원`
   const title = meta.title.trim() || `${meta.purpose.trim() || '교육 활동'} 물품 구입`
+
+  const saveHwpx = async () => {
+    setCopied('한글 파일 만드는 중…')
+    try {
+      downloadBlob(await htmlToHwpx(pumuiHtml(title, body, items, total)), `${title.replace(/[\\/:*?"<>|]/g, '_')}.hwpx`)
+      setCopied('')
+    } catch (e) { setCopied(`한글 파일 실패(${(e as Error).message ?? e}) —`) }
+  }
 
   const copy = async (text: string, what: string) => {
     try { await navigator.clipboard.writeText(text); setCopied(what) } catch { setCopied('') }
@@ -146,6 +167,7 @@ export function Pumui() {
             <button className="btn" onClick={() => copy(basis, '산출 기초')}>산출 기초 복사</button>
           </div>
           <div className="row">
+            <button className="btn" onClick={saveHwpx}>품의서 한글(HWPX)로 저장</button>
             <button className="btn" onClick={saveXlsx}>품목 내역 엑셀 저장</button>
             <button className="btn" onClick={() => copy(tsv, '품목 표')}>품목 표 복사 (엑셀 붙여넣기용)</button>
           </div>

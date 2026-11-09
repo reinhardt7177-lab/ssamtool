@@ -1,6 +1,9 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { daysBetween, DAY_KO, fmt, fromIso, iso, parseOffDays } from './days'
 import '../newsletter/newsletter.css'
+import { loadSchool, saveSchool } from '../../lib/school'
+import { htmlToHwpx } from '../../lib/hwp'
+import { downloadBlob } from '../../lib/files'
 
 interface Form {
   school: string; grade: string; cls: string; no: string; name: string
@@ -15,7 +18,6 @@ interface Rules { maxDays: number; used: number; leadDays: number; offText: stri
 
 const KINDS = ['가족 동반 여행', '친인척 방문', '견학 활동', '체험 활동', '기타']
 const STORE_RULES = 'ssamtool.fieldtrip.rules.v1'
-const STORE_SCHOOL = 'ssamtool.fieldtrip.school.v1'
 
 const plus = (days: number) => { const d = new Date(); d.setDate(d.getDate() + days); return iso(d) }
 
@@ -40,14 +42,24 @@ const table = { width: '100%', borderCollapse: 'collapse' as const }
 
 export function FieldTrip() {
   const [f, setF] = useState<Form>(() => {
-    try { return { ...SAMPLE, school: localStorage.getItem(STORE_SCHOOL) || SAMPLE.school } } catch { return SAMPLE }
+    return { ...SAMPLE, school: loadSchool().name }
   })
   const [isSample, setIsSample] = useState(true)
   const [rules, setRules] = useState<Rules>(loadRules)
   const [doc, setDoc] = useState<'apply' | 'report'>('apply')
 
   useEffect(() => { try { localStorage.setItem(STORE_RULES, JSON.stringify(rules)) } catch { /* 저장 못 해도 동작에는 문제 없음 */ } }, [rules])
-  useEffect(() => { try { localStorage.setItem(STORE_SCHOOL, f.school) } catch { /* 같음 */ } }, [f.school])
+  useEffect(() => saveSchool({ name: f.school }), [f.school])
+  const sheet = useRef<HTMLDivElement>(null)
+  const [hwpMsg, setHwpMsg] = useState('')
+  const saveHwpx = async () => {
+    if (!sheet.current) return
+    setHwpMsg('한글 파일 만드는 중… (처음 한 번은 한글 엔진을 받아요)')
+    try {
+      downloadBlob(await htmlToHwpx(sheet.current.innerHTML), `교외체험학습_${doc === 'apply' ? '신청서' : '결과보고서'}_${f.name || '학생'}.hwpx`)
+      setHwpMsg('')
+    } catch (e) { setHwpMsg(`한글 파일을 만들지 못했어요: ${(e as Error).message ?? e}`) }
+  }
 
   const set = <K extends keyof Form>(k: K, v: Form[K]) => { setF(p => ({ ...p, [k]: v })); setIsSample(false) }
   const days = useMemo(() => daysBetween(f.start, f.end, parseOffDays(rules.offText)), [f.start, f.end, rules.offText])
@@ -151,12 +163,13 @@ export function FieldTrip() {
             <button role="tab" aria-selected={doc === 'apply'} className={`tpl-tab${doc === 'apply' ? ' on' : ''}`} onClick={() => setDoc('apply')}>신청서</button>
             <button role="tab" aria-selected={doc === 'report'} className={`tpl-tab${doc === 'report' ? ' on' : ''}`} onClick={() => setDoc('report')}>결과보고서</button>
           </div>
-          <div className="row"><button className="btn primary" onClick={() => print()}>{doc === 'apply' ? '신청서' : '결과보고서'} 인쇄 · PDF로 저장</button></div>
+          <div className="row"><button className="btn primary" onClick={() => print()}>{doc === 'apply' ? '신청서' : '결과보고서'} 인쇄 · PDF로 저장</button><button className="btn" onClick={saveHwpx}>한글(HWPX)로 저장</button></div>
+          {hwpMsg && <p className="note" aria-live="polite">{hwpMsg}</p>}
         </section>
       </div>
 
       <div className="nl-preview">
-        <div className="nl-sheet">
+        <div className="nl-sheet" ref={sheet}>
           {doc === 'apply' ? (
             <div style={docStyle}>
               <div style={titleStyle}>교외체험학습 신청서</div>

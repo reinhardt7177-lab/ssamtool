@@ -1,14 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { SEASON_GREETING, TEMPLATES, type Letter, type Row } from './templates'
 import './newsletter.css'
-
-interface School { name: string; principal: string; contact: string; logo: string | null }
-const STORE = 'ssamtool.newsletter.school.v1'
-const DEFAULT_SCHOOL: School = { name: '○○초등학교', principal: '○○초등학교장', contact: '담임 ○○○ · 전화 000-000-0000', logo: null }
-
-function loadSchool(): School {
-  try { return { ...DEFAULT_SCHOOL, ...JSON.parse(localStorage.getItem(STORE) ?? '{}') } } catch { return DEFAULT_SCHOOL }
-}
+import { loadSchool, saveSchool, type School } from '../../lib/school'
+import { htmlToHwpx } from '../../lib/hwp'
+import { downloadBlob } from '../../lib/files'
 
 const DAYS = '일월화수목금토'
 function today() {
@@ -117,7 +112,7 @@ export function Newsletter() {
   const [copied, setCopied] = useState('')
   const docRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => { try { localStorage.setItem(STORE, JSON.stringify(school)) } catch { /* 저장 못 해도 동작에는 문제 없음 */ } }, [school])
+  useEffect(() => saveSchool(school), [school])
 
   const pickTemplate = (id: string) => {
     setTplId(id)
@@ -126,6 +121,15 @@ export function Newsletter() {
   const setL = <K extends keyof Letter>(k: K, v: Letter[K]) => setLetter(l => ({ ...l, [k]: v }))
   const setRow = (i: number, patch: Partial<Row>) => setL('rows', letter.rows.map((r, k) => (k === i ? { ...r, ...patch } : r)))
   const setReply = (patch: Partial<Letter['reply']>) => setL('reply', { ...letter.reply, ...patch })
+
+  const saveHwpx = async () => {
+    if (!docRef.current) return
+    setCopied('한글 파일 만드는 중… (처음 한 번은 한글 엔진을 받아요)')
+    try {
+      downloadBlob(await htmlToHwpx(docRef.current.innerHTML), `${(letter.title || '가정통신문').replace(/[\\/:*?"<>|]/g, '_')}.hwpx`)
+      setCopied('한글 파일로 저장했어요.')
+    } catch (e) { setCopied(`한글 파일을 만들지 못했어요: ${(e as Error).message ?? e}`) }
+  }
 
   const copyForHwp = async () => {
     const node = docRef.current
@@ -227,6 +231,7 @@ export function Newsletter() {
           <div className="panel-head"><h2>내보내기</h2></div>
           <div className="row">
             <button className="btn primary" onClick={() => print()}>인쇄 · PDF로 저장</button>
+            <button className="btn" onClick={saveHwpx}>한글(HWPX)로 저장</button>
             <button className="btn" onClick={copyForHwp}>한글에 붙여넣기용 복사</button>
           </div>
           <p className="note" aria-live="polite">{copied || '인쇄 창에서 배율 100%, 머리글·바닥글 끄기로 설정하세요. 한글에 붙여넣으면 글자와 표가 함께 들어가요.'}</p>

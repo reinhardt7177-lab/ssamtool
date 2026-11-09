@@ -59,7 +59,7 @@ button:disabled { cursor: default }
 :focus-visible { outline: 2px solid #ffe927; outline-offset: 2px }
 
 /* ── 맨 위 이름 막대 ── */
-.desk { min-height: 100vh; max-width: 1480px; margin: 0 auto; padding: 0 28px 120px }
+.desk { min-height: 100vh; max-width: 1920px; margin: 0 auto; padding: 0 clamp(28px, 2.5vw, 48px) 120px }
 .topbar { position: sticky; top: 0; z-index: 20; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; height: 60px; margin: 0 -28px; padding: 0 28px; color: var(--night-ink); background: rgba(25, 25, 25, .92); border-bottom: 1px solid rgba(255, 255, 255, .1) }
 .topbar .brand { grid-column: 2; font-family: var(--display); font-size: 26px; letter-spacing: .02em; color: var(--night-ink); text-decoration: none; line-height: 1; text-transform: uppercase }
 .topbar .back { justify-self: start; color: var(--night-muted); text-decoration: none; font-family: var(--mono); font-size: 12px }

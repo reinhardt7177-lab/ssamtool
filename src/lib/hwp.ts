@@ -59,3 +59,26 @@ export async function convertHwp(file: File, to: HwpTarget): Promise<Blob> {
 }
 
 export const swapExt = (name: string, ext: string) => name.replace(/\.[^.]+$/, '') + '.' + ext
+
+// 미리보기 HTML(인라인 스타일)을 빈 한글 문서에 붙여 HWPX로 만든다
+export async function htmlToHwpx(html: string): Promise<Blob> {
+  const { HwpDocument } = await rhwp()
+  const doc = HwpDocument.createEmpty()
+  try {
+    doc.createBlankDocument()
+    // rhwp는 <p>의 정렬·글자 모양만 읽어서, 글만 든 <div>를 <p>로 바꾼다
+    const box = document.createElement('div')
+    box.innerHTML = html
+    box.querySelectorAll('div').forEach(d => {
+      if (d.querySelector('div,p,table')) return d.replaceWith(...d.childNodes) // 감싸는 div는 풀어야 안쪽 모양이 산다
+      const p = document.createElement('p')
+      p.style.cssText = d.style.cssText
+      p.append(...d.childNodes)
+      d.replaceWith(p)
+    })
+    doc.pasteHtml(0, 0, 0, '<p></p>' + box.innerHTML) // 첫 문단은 빈 문서의 문단에 합쳐져 모양을 잃으므로 빈 문단을 먼저 붙인다
+    return new Blob([doc.exportHwpx() as BlobPart], { type: TYPES.hwpx })
+  } finally {
+    doc.free()
+  }
+}
