@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import * as XLSX from 'xlsx'
 import { downloadBlob } from '../../lib/files'
-import { htmlToHwpx } from '../../lib/hwp'
-import { amountOf, basisLine, moneyText, parseItems, pumuiBody, SAMPLE_ITEMS, won, type Item, type Meta } from './items'
+import { htmlToHwpx, hwpText } from '../../lib/hwp'
+import { DropZone } from '../../components/DropZone'
+import { amountOf, basisLine, itemsFromQuote, moneyText, parseItems, pumuiBody, SAMPLE_ITEMS, won, type Item, type Meta } from './items'
 
 const EMPTY: Item = { name: '', spec: '', unit: '개', qty: 1, price: 0 }
 // 지방계약법 시행령 제30조: 추정가격 2천만 원 이하는 1인 견적 수의계약
@@ -36,6 +37,18 @@ export function Pumui() {
 
   const setItem = (i: number, patch: Partial<Item>) => { setItems(xs => xs.map((x, k) => (k === i ? { ...x, ...patch } : x))); setIsSample(false) }
   const setM = (k: keyof Meta, v: string) => setMeta(m => ({ ...m, [k]: v }))
+
+  const importQuote = async (fs: File[]) => {
+    const f = fs[0]
+    if (!f || !/\.(pdf|hwpx?)$/i.test(f.name)) { setPasteMsg('견적서는 PDF나 한글 파일로 넣어 주세요.'); return }
+    setPasteMsg('견적서 읽는 중… (처음 한 번은 한글 엔진을 받아요)')
+    try {
+      const { items: got } = itemsFromQuote(await hwpText(f))
+      if (!got.length) { setPasteMsg('견적서에서 품목 표를 찾지 못했어요. 스캔한 견적서는 글자를 읽을 수 없어요. 표를 복사해 아래에 붙여넣어 주세요.'); return }
+      setItems(isSample ? got : [...items, ...got]); setIsSample(false)
+      setPasteMsg(`견적서에서 ${got.length}개 품목을 읽었어요. 수량·단가가 맞는지 꼭 확인해 주세요.`)
+    } catch (e) { setPasteMsg(`견적서를 열지 못했어요: ${(e as Error).message ?? e}`) }
+  }
 
   const importPaste = () => {
     const { items: got, skipped } = parseItems(paste)
@@ -108,6 +121,7 @@ export function Pumui() {
           <button className="btn small" onClick={() => { setItems(xs => [...(isSample ? [] : xs), { ...EMPTY }]); setIsSample(false) }}>품목 더하기</button>
           <button className="btn text small" onClick={() => { setItems([]); setIsSample(false) }}>모두 지우기</button>
         </div>
+        <DropZone accept=".pdf,.hwp,.hwpx" multiple={false} label="견적서 넣기 (PDF · 한글)" hint="견적서의 품목 표를 읽어 위 표에 넣어요. 스캔한 사진 PDF는 못 읽어요." onFiles={importQuote} />
         <details className="pm-paste">
           <summary>엑셀·쇼핑몰 장바구니에서 붙여넣기</summary>
           <div className="stack">

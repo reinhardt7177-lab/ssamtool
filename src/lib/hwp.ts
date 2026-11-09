@@ -82,3 +82,20 @@ export async function htmlToHwpx(html: string): Promise<Blob> {
     doc.free()
   }
 }
+
+// 한글 문서의 글 전체 (표 안 글 포함)
+export async function hwpText(file: File): Promise<string> {
+  const doc = await open(file)
+  try { return JSON.parse(doc.getTextFileText()) as string } finally { doc.free() } // rhwp는 JSON 문자열로 준다
+}
+
+// 글자를 차례로 바꾸고 HWPX로 저장한다. counts[i]는 pairs[i]가 바뀐 곳 수
+export async function hwpReplace(file: File, pairs: [string, string][]): Promise<{ blob: Blob; counts: number[] }> {
+  const doc = await open(file)
+  try {
+    const counts = pairs.map(([a, b]) => (JSON.parse(doc.replaceAll(a, b, true)) as { count?: number }).count ?? 0)
+    return { blob: new Blob([doc.exportHwpx() as BlobPart], { type: TYPES.hwpx }), counts }
+  } finally {
+    doc.free()
+  }
+}

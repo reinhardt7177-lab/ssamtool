@@ -7,6 +7,7 @@ import { AREAS, findTool, type Area } from './registry'
 import { DocShrink } from './tools/docShrink/DocShrink'
 import { PdfMerge } from './tools/pdfMerge/PdfMerge'
 import { Convert } from './tools/convert/Convert'
+import { PlanRewrite } from './tools/planRewrite/PlanRewrite'
 import { LabelMaker } from './tools/labels/LabelMaker'
 import { GongmunCheck } from './tools/gongmunCheck/GongmunCheck'
 import { Newsletter } from './tools/newsletter/Newsletter'
@@ -22,6 +23,7 @@ const SCREENS: Record<string, () => React.ReactElement> = {
   'doc-shrink': () => <DocShrink />,
   'pdf-merge': () => <PdfMerge />,
   convert: () => <Convert />,
+  'plan-rewrite': () => <PlanRewrite />,
   'label-maker': () => <LabelMaker />,
   'gongmun-check': () => <GongmunCheck />,
   newsletter: () => <Newsletter />,

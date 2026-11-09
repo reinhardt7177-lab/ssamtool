@@ -109,3 +109,23 @@ export const SAMPLE_ITEMS: Item[] = [
   { name: '코팅지', spec: 'A4 100매', unit: '팩', qty: 2, price: 12900 },
   { name: '배송비', spec: '', unit: '건', qty: 1, price: 3000 },
 ]
+
+// 견적서 PDF·한글에서 읽은 글: 표는 칸마다 한 줄로 나오므로, 제목 칸(품명·수량·단가…)이 이어진 곳을 찾아
+// 그 칸 수만큼 줄을 묶어 한 행으로 되돌린 뒤 parseItems에 넘긴다. 한 줄에 한 품목인 글이면 그대로 읽는다.
+export function itemsFromQuote(text: string): { items: Item[]; skipped: number } {
+  const lines = text.replace(/\r/g, '').split('\n').map(l => l.trim()).filter(Boolean)
+  const isHead = (l: string) => Object.values(HEAD).some(r => r.test(l)) || /^(금액|합계금액|공급가액|비고|번호|순번|No\.?)$/i.test(l)
+  let best = parseItems(lines.join('\n'))
+  for (let i = 0; i < lines.length; i++) {
+    if (!HEAD.name.test(lines[i])) continue
+    let k = i
+    while (k < lines.length && isHead(lines[k]) && lines[k].length <= 8) k++
+    const w = k - i
+    if (w < 3) continue
+    const rows = [lines.slice(i, k).join('\t')]
+    for (let j = k; j + w <= lines.length && !/^(합\s*계|총\s*계|소\s*계)/.test(lines[j]); j += w) rows.push(lines.slice(j, j + w).join('\t'))
+    const got = parseItems(rows.join('\n'))
+    if (got.items.length > best.items.length) best = got
+  }
+  return best
+}

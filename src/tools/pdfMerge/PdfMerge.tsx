@@ -42,6 +42,28 @@ export async function merge(files: File[], fitImagesToA4: boolean): Promise<Uint
   return out.save()
 }
 
+// 모아찍기: n쪽(2·4·6·8)을 A4 한 장에 격자로 줄여 넣는다. 2·6·8쪽은 가로 A4
+export async function nUp(bytes: Uint8Array, n: number): Promise<Uint8Array> {
+  if (n <= 1) return bytes
+  const src = await PDFDocument.load(bytes)
+  const out = await PDFDocument.create()
+  const pages = await out.embedPages(src.getPages())
+  const [cols, rows] = ({ 2: [2, 1], 4: [2, 2], 6: [3, 2], 8: [4, 2] } as Record<number, number[]>)[n]
+  const landscape = n !== 4
+  const pw = landscape ? A4.h : A4.w, ph = landscape ? A4.w : A4.h
+  const m = 14, cw = (pw - m * 2) / cols, ch = (ph - m * 2) / rows
+  for (let i = 0; i < pages.length; i += n) {
+    const sheet = out.addPage([pw, ph])
+    pages.slice(i, i + n).forEach((p, k) => {
+      const s = Math.min((cw - 8) / p.width, (ch - 8) / p.height)
+      const x = m + (k % cols) * cw + (cw - p.width * s) / 2
+      const y = ph - m - (Math.floor(k / cols) + 1) * ch + (ch - p.height * s) / 2
+      sheet.drawPage(p, { x, y, width: p.width * s, height: p.height * s })
+    })
+  }
+  return out.save()
+}
+
 // 공문 붙임 표기: 하나면 "붙임  ○○ 1부.  끝.", 여럿이면 번호를 붙이고 둘째 줄부터 들여쓴다
 export function attachmentText(names: string[]): string {
   if (!names.length) return ''
@@ -56,6 +78,7 @@ export function PdfMerge() {
   const [names, setNames] = useState<string[]>([])
   const [outName, setOutName] = useState('붙임_합본')
   const [fit, setFit] = useState(true)
+  const [perSheet, setPerSheet] = useState(1)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [copied, setCopied] = useState(false)
@@ -77,7 +100,7 @@ export function PdfMerge() {
   const run = async () => {
     setBusy(true); setError('')
     try {
-      const bytes = await merge(files, fit)
+      const bytes = await nUp(await merge(files, fit), perSheet)
       downloadBlob(new Blob([bytes as BlobPart], { type: 'application/pdf' }), `${outName || '합본'}.pdf`)
     } catch (e) {
       setError(`합치지 못했어요: ${(e as Error).message}. 암호가 걸린 PDF라면 암호를 풀고 다시 넣어 주세요.`)
@@ -121,6 +144,12 @@ export function PdfMerge() {
             <input value={outName} onChange={e => setOutName(e.target.value)} />
           </label>
         </div>
+        <label className="field">모아찍기 (한 장에 여러 쪽)
+          <select value={perSheet} onChange={e => setPerSheet(Number(e.target.value))}>
+            <option value={1}>안 함 (한 장에 1쪽)</option>
+            {[2, 4, 6, 8].map(n => <option key={n} value={n}>한 장에 {n}쪽</option>)}
+          </select>
+        </label>
         <label className="check"><input type="checkbox" checked={fit} onChange={e => setFit(e.target.checked)} /> 사진은 A4 한 장에 맞추기</label>
         <div className="row">
           <button className="btn primary" disabled={!files.length || busy} onClick={run}>{busy ? '합치는 중…' : 'PDF 하나로 합치기'}</button>

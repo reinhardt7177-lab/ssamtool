@@ -70,7 +70,7 @@ export const AREAS: Area[] = [
     en: 'Plans & Reports',
     name: '계획서·보고서',
     tools: [
-      { id: 'plan-rewrite', name: '계획서 다시쓰기', summary: '작년 계획서로 올해 초안과 바뀐 곳 비교표를 만들어요.', status: 'soon' },
+      { id: 'plan-rewrite', name: '계획서 다시쓰기', summary: '작년 한글 계획서의 연도와 날짜·요일을 올해로 바꾸고 신구대조표를 만들어요.', status: 'ready', formats: ['HWP', 'HWPX', 'XLSX 저장'] },
       { id: 'report', name: '결과보고서', summary: '설문·실적 엑셀로 통계표가 들어간 결과보고서를 만들어요.', status: 'soon' },
       { id: 'safety-hours', name: '안전교육 시수표', summary: '실시한 안전교육을 기록하면 7대 영역별 누적·부족 시수를 보여 줘요.', status: 'ready', formats: ['엑셀 붙여넣기', 'XLSX 저장'] },
     ],
