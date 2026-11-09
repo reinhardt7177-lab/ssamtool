@@ -32,7 +32,7 @@ export const AREAS: Area[] = [
     tools: [
       { id: 'doc-shrink', name: '문서 사진 용량 줄이기', summary: 'HWPX·워드·엑셀·PPT 속 사진만 줄여 첨부 용량을 맞춰요.', status: 'ready', formats: ['HWPX', 'DOCX', 'XLSX', 'PPTX'] },
       { id: 'pdf-merge', name: 'PDF 합치기·붙임 문구', summary: 'PDF와 사진을 순서대로 한 파일로 묶고, 공문 붙임 문구를 만들어요.', status: 'ready', formats: ['PDF', 'JPG', 'PNG'] },
-      { id: 'convert', name: '형식 변환', summary: 'HWP↔HWPX, 한글→PDF 등 형식 바꾸기.', status: 'soon' },
+      { id: 'convert', name: '한글 형식 변환', summary: 'HWP↔HWPX, 한글→PDF, PDF→한글을 한글 프로그램 없이 바꿔요.', status: 'ready', formats: ['HWP', 'HWPX', 'PDF'] },
     ],
   },
   {

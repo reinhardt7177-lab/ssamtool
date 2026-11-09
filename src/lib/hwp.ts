@@ -1,0 +1,61 @@
+import { PDFDocument } from 'pdf-lib'
+import wasmUrl from '@rhwp/core/rhwp_bg.wasm?url'
+
+// rhwp 엔진(27MB)은 한글 파일을 처음 열 때만 받아 온다
+let ready: Promise<typeof import('@rhwp/core')> | null = null
+function rhwp() {
+  ready ??= (async () => {
+    let ctx: CanvasRenderingContext2D | null = null
+    ;(globalThis as Record<string, unknown>).measureTextWidth = (font: string, text: string) => {
+      ctx ??= document.createElement('canvas').getContext('2d')!
+      if (ctx.font !== font) ctx.font = font
+      return ctx.measureText(text).width
+    }
+    const m = await import('@rhwp/core')
+    await m.default({ module_or_path: wasmUrl })
+    return m
+  })()
+  ready.catch(() => { ready = null })
+  return ready
+}
+
+export type HwpTarget = 'hwpx' | 'hwp' | 'pdf'
+
+async function open(file: File) {
+  const { HwpDocument } = await rhwp()
+  const bytes = new Uint8Array(await file.arrayBuffer())
+  if (file.name.toLowerCase().endsWith('.pdf')) return HwpDocument.importPdf(bytes, { layout: 'editable' })
+  return new HwpDocument(bytes)
+}
+
+// shortcut: PDF는 쪽 그림으로 만들어 글자 선택이 안 됨, 글자 검색이 필요해지면 SVG→벡터 PDF로 바꾸기
+async function toPdf(doc: { pageCount(): number; getPageInfo(p: number): string; renderPageToCanvas(p: number, c: HTMLCanvasElement, s: number): void }) {
+  const out = await PDFDocument.create()
+  const canvas = document.createElement('canvas')
+  for (let p = 0; p < doc.pageCount(); p++) {
+    const { width, height } = JSON.parse(doc.getPageInfo(p)) as { width: number; height: number }
+    doc.renderPageToCanvas(p, canvas, 2)
+    const ctx = canvas.getContext('2d')!
+    ctx.globalCompositeOperation = 'destination-over' // 투명한 바탕을 흰색으로
+    ctx.fillStyle = '#fff'
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+    const jpg = await new Promise<Blob>((res, rej) => canvas.toBlob(b => (b ? res(b) : rej(new Error('쪽 그림 만들기 실패'))), 'image/jpeg', 0.9))
+    const img = await out.embedJpg(await jpg.arrayBuffer())
+    out.addPage([width * 0.75, height * 0.75]).drawImage(img, { x: 0, y: 0, width: width * 0.75, height: height * 0.75 }) // 화면 px → PDF pt
+  }
+  return out.save()
+}
+
+const TYPES: Record<HwpTarget, string> = { hwpx: 'application/hwp+zip', hwp: 'application/x-hwp', pdf: 'application/pdf' }
+
+export async function convertHwp(file: File, to: HwpTarget): Promise<Blob> {
+  const doc = await open(file)
+  try {
+    const bytes = to === 'hwpx' ? doc.exportHwpx() : to === 'hwp' ? doc.exportHwp() : await toPdf(doc)
+    return new Blob([bytes as BlobPart], { type: TYPES[to] })
+  } finally {
+    doc.free()
+  }
+}
+
+export const swapExt = (name: string, ext: string) => name.replace(/\.[^.]+$/, '') + '.' + ext

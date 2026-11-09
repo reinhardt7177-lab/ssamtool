@@ -6,6 +6,7 @@ import 'lenis/dist/lenis.css'
 import { AREAS, findTool, type Area } from './registry'
 import { DocShrink } from './tools/docShrink/DocShrink'
 import { PdfMerge } from './tools/pdfMerge/PdfMerge'
+import { Convert } from './tools/convert/Convert'
 import { LabelMaker } from './tools/labels/LabelMaker'
 import { GongmunCheck } from './tools/gongmunCheck/GongmunCheck'
 import { Newsletter } from './tools/newsletter/Newsletter'
@@ -20,6 +21,7 @@ gsap.registerPlugin(useGSAP)
 const SCREENS: Record<string, () => React.ReactElement> = {
   'doc-shrink': () => <DocShrink />,
   'pdf-merge': () => <PdfMerge />,
+  convert: () => <Convert />,
   'label-maker': () => <LabelMaker />,
   'gongmun-check': () => <GongmunCheck />,
   newsletter: () => <Newsletter />,

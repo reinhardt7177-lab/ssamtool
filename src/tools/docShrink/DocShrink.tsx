@@ -2,6 +2,7 @@ import { useState } from 'react'
 import JSZip from 'jszip'
 import { DropZone } from '../../components/DropZone'
 import { downloadBlob, extOf, formatBytes, withSuffix } from '../../lib/files'
+import { convertHwp, swapExt } from '../../lib/hwp'
 import { kindOf, shrinkToTarget, type ShrinkOptions, type ShrinkResult } from './shrink'
 
 interface Job {
@@ -26,8 +27,9 @@ export function DocShrink() {
   const [rejected, setRejected] = useState<string[]>([])
 
   const add = (files: File[]) => {
-    const ok = files.filter(f => kindOf(f.name))
-    setRejected(files.filter(f => !kindOf(f.name)).map(f => f.name))
+    const can = (f: File) => kindOf(f.name) || extOf(f.name) === 'hwp'
+    const ok = files.filter(can)
+    setRejected(files.filter(f => !can(f)).map(f => f.name))
     setJobs(j => [...j, ...ok.map(file => ({ file, status: 'wait' as const, message: '대기' }))])
   }
 
@@ -42,7 +44,13 @@ export function DocShrink() {
       if (jobs[i].status === 'done') continue
       update(i, { status: 'run', message: '여는 중' })
       try {
-        const { result } = await shrinkToTarget(jobs[i].file, opt, target, msg => update(i, { message: msg }))
+        let file = jobs[i].file
+        if (extOf(file.name) === 'hwp') {
+          update(i, { message: 'HWPX로 바꾸는 중' })
+          file = new File([await convertHwp(file, 'hwpx')], swapExt(file.name, 'hwpx'))
+          update(i, { file })
+        }
+        const { result } = await shrinkToTarget(file, opt, target, msg => update(i, { message: msg }))
         const missed = target && result.after > target
         update(i, {
           status: 'done', result,
@@ -73,15 +81,14 @@ export function DocShrink() {
       <section className="panel">
         <div className="panel-head"><h2>파일 넣기</h2><span className="meta">여러 개 한 번에</span></div>
         <DropZone
-          accept=".hwpx,.docx,.xlsx,.pptx"
-          label="HWPX · 워드 · 엑셀 · PPT 파일"
-          hint="예전 한글 형식(.hwp)은 한글에서 '다른 이름으로 저장 → HWPX'로 바꾼 뒤 넣어 주세요."
+          accept=".hwp,.hwpx,.docx,.xlsx,.pptx"
+          label="한글 · 워드 · 엑셀 · PPT 파일"
+          hint="예전 한글 형식(.hwp)은 HWPX로 바꾼 뒤 줄여서 .hwpx로 저장해요."
           onFiles={add}
         />
         {rejected.length > 0 && (
           <p className="note warn">
             넣지 못한 파일: {rejected.join(', ')}
-            {rejected.some(n => extOf(n) === 'hwp') && ' — .hwp는 한글에서 HWPX로 저장한 뒤 넣어 주세요.'}
           </p>
         )}
         <div className="row">
