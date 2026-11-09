@@ -57,8 +57,8 @@ export const AREAS: Area[] = [
     name: '공문서·행정',
     tools: [
       { id: 'gongmun-check', name: '공문 작성 규칙 검사', summary: '날짜·시간·금액·항목 기호·붙임·"끝." 표시를 검사하고 고쳐요.', status: 'ready', formats: ['본문 붙여넣기'] },
-      { id: 'gongmun-draft', name: '공문 초안', summary: '메모 몇 줄로 기안문 초안을 만들어요.', status: 'soon' },
-      { id: 'minutes', name: '회의록·협의록', summary: '안건·참석자·결정 사항으로 회의록을 만들어요.', status: 'soon' },
+      { id: 'gongmun-draft', name: '공문 초안', summary: '메모 몇 줄로 관련·항목·붙임·끝. 표시까지 규칙에 맞는 기안문 초안을 만들어요.', status: 'ready', formats: ['HWPX', '복사'] },
+      { id: 'minutes', name: '회의록·협의록', summary: '안건·참석자·결정 사항으로 협의록을 만들어요.', status: 'ready', formats: ['HWPX', '인쇄·PDF'] },
     ],
   },
   {
@@ -71,7 +71,7 @@ export const AREAS: Area[] = [
     name: '계획서·보고서',
     tools: [
       { id: 'plan-rewrite', name: '계획서 다시쓰기', summary: '작년 한글 계획서의 연도와 날짜·요일을 올해로 바꾸고 신구대조표를 만들어요.', status: 'ready', formats: ['HWP', 'HWPX', 'XLSX 저장'] },
-      { id: 'report', name: '결과보고서', summary: '설문·실적 엑셀로 통계표가 들어간 결과보고서를 만들어요.', status: 'soon' },
+      { id: 'report', name: '결과보고서', summary: '운영 내용과 설문 응답을 넣으면 통계표가 들어간 결과보고서를 만들어요.', status: 'ready', formats: ['설문 붙여넣기', 'HWPX'] },
       { id: 'safety-hours', name: '안전교육 시수표', summary: '실시한 안전교육을 기록하면 7대 영역별 누적·부족 시수를 보여 줘요.', status: 'ready', formats: ['엑셀 붙여넣기', 'XLSX 저장'] },
     ],
   },
@@ -85,8 +85,9 @@ export const AREAS: Area[] = [
     name: '재정·물품',
     tools: [
       { id: 'pumui', name: '품의 준비 도우미', summary: '품목만 넣으면 합계·금액 한글 표기·산출 기초·품의 본문이 만들어져요.', status: 'ready', formats: ['엑셀 붙여넣기', 'XLSX 저장'] },
-      { id: 'allowance', name: '수당·협의회비 계산', summary: '강사 수당과 협의회비를 기준표로 계산해요.', status: 'soon' },
-      { id: 'budget', name: '예산 집행 현황표', summary: '에듀파인 엑셀로 사업별 집행률을 정리해요.', status: 'soon' },
+      { id: 'allowance', name: '수당·협의회비 계산', summary: '강사 수당·협의회비와 원천징수(8.8%·3.3%)를 계산해 지급 내역을 만들어요.', status: 'ready', formats: ['HWPX', '인쇄·PDF'] },
+      { id: 'budget', name: '예산 집행 현황표', summary: '에듀파인 엑셀로 사업별 집행률·잔액을 보고 덜 쓴 사업을 짚어 줘요.', status: 'ready', formats: ['XLSX', '붙여넣기'] },
+      { id: 'inspection', name: '검수조서·증빙 묶음', summary: '품목을 넣으면 검수조서를 만들고, 견적서·거래명세서를 PDF 하나로 묶어요.', status: 'ready', formats: ['HWPX', 'PDF'] },
     ],
   },
   {
@@ -99,7 +100,8 @@ export const AREAS: Area[] = [
     name: '나이스·학적 서류',
     tools: [
       { id: 'field-trip', name: '교외체험학습 서류', summary: '수업일 수를 세고 연간 허용 일수를 확인해 신청서·결과보고서를 만들어요.', status: 'ready', formats: ['인쇄·PDF'] },
-      { id: 'attendance', name: '출결 통계 정리', summary: '나이스 출결 엑셀을 월별·사유별로 요약해요.', status: 'soon' },
+      { id: 'attendance', name: '출결 통계 정리', summary: '나이스 출결 엑셀을 종류·사유·월·학생별로 요약해요.', status: 'ready', formats: ['XLSX', '붙여넣기'] },
+      { id: 'transfer', name: '전입·전출 체크리스트', summary: '전입·전출 학생이 생겼을 때 담임이 챙길 일을 순서대로 체크해요.', status: 'ready', formats: ['체크리스트'] },
     ],
   },
   {

@@ -8,6 +8,14 @@ import { DocShrink } from './tools/docShrink/DocShrink'
 import { PdfMerge } from './tools/pdfMerge/PdfMerge'
 import { Convert } from './tools/convert/Convert'
 import { PlanRewrite } from './tools/planRewrite/PlanRewrite'
+import { Allowance } from './tools/allowance/Allowance'
+import { Minutes } from './tools/minutes/Minutes'
+import { GongmunDraft } from './tools/gongmunDraft/GongmunDraft'
+import { Attendance } from './tools/attendance/Attendance'
+import { Budget } from './tools/budget/Budget'
+import { Report } from './tools/report/Report'
+import { Inspection } from './tools/inspection/Inspection'
+import { Transfer } from './tools/transfer/Transfer'
 import { LabelMaker } from './tools/labels/LabelMaker'
 import { GongmunCheck } from './tools/gongmunCheck/GongmunCheck'
 import { Newsletter } from './tools/newsletter/Newsletter'
@@ -24,6 +32,14 @@ const SCREENS: Record<string, () => React.ReactElement> = {
   'pdf-merge': () => <PdfMerge />,
   convert: () => <Convert />,
   'plan-rewrite': () => <PlanRewrite />,
+  'allowance': () => <Allowance />,
+  'minutes': () => <Minutes />,
+  'gongmun-draft': () => <GongmunDraft />,
+  'attendance': () => <Attendance />,
+  'budget': () => <Budget />,
+  'report': () => <Report />,
+  'inspection': () => <Inspection />,
+  'transfer': () => <Transfer />,
   'label-maker': () => <LabelMaker />,
   'gongmun-check': () => <GongmunCheck />,
   newsletter: () => <Newsletter />,

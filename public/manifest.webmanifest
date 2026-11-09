@@ -1,0 +1,15 @@
+{
+  "name": "쌤툴 · 선생님 잡업무 파일철",
+  "short_name": "쌤툴",
+  "description": "학교 잡업무를 브라우저 안에서 끝내는 무료 도구함",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#191919",
+  "theme_color": "#191919",
+  "lang": "ko",
+  "icons": [
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "apple-touch-icon.png", "sizes": "180x180", "type": "image/png" }
+  ]
+}
