@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import * as XLSX from 'xlsx'
 import { downloadBlob } from '../../lib/files'
 import { DAY_KO, fmt, fromIso, iso } from '../fieldTrip/days'
+import { loadRoster } from '../../lib/roster'
 import { assign, hm, makeSlots, options, parseRequest, type Request } from './schedule'
 
 const nextMonday = () => { const d = new Date(); d.setDate(d.getDate() + ((8 - d.getDay()) % 7 || 7) + 14); return iso(d) }
@@ -104,6 +105,7 @@ export function CounselWeek() {
         <section className="panel">
           <div className="panel-head"><h2>희망 시간</h2><span className="meta">회신서 내용을 한 줄에 한 가정씩</span></div>
           <textarea className="cw-text" rows={10} value={text} onChange={e => { setText(e.target.value); setIsSample(false); setFixed({}) }} aria-label="가정별 희망 시간" />
+          {loadRoster().length > 0 && <div className="row"><button className="btn small" onClick={() => { setText(loadRoster().map(x => `${x.name}\t`).join('\n')); setIsSample(false); setFixed({}) }}>우리 반 명단으로 채우기</button></div>}
           <p className="note">이름, 희망 요일이나 날짜(월·수, 11/24), 시간(15시 이후, 14:30~15:30), 방법(대면·전화)을 탭이나 | 로 나눠 적으세요. 시간을 안 적으면 아무 때나 괜찮은 것으로 봐요.</p>
           {reqs.length > 0 && (
             <table className="list">

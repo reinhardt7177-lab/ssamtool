@@ -253,6 +253,13 @@ function Home() {
   const [open, setOpen] = useState<string | null>(AREAS[0].id)
   const [hover, setHover] = useState<number | null>(null)
   const leaving = useRef(false)
+  // 마우스를 띠에 잠깐 올려 두면 그 띠가 펼쳐진다 (지나가기만 할 때 출렁이지 않게 0.2초 기다림)
+  const hoverTimer = useRef<number>(0)
+  const hoverBand = (i: number | null) => {
+    setHover(i)
+    clearTimeout(hoverTimer.current)
+    if (i !== null && matchMedia('(hover: hover)').matches) hoverTimer.current = window.setTimeout(() => setOpen(AREAS[i].id), 200)
+  }
   const all = AREAS.flatMap(a => a.tools)
   const ready = all.filter(t => t.status === 'ready').length
 
@@ -280,11 +287,11 @@ function Home() {
         <h1><Split text="Teacher's Files" /><span className="ko"><Split text="선생님 잡업무 파일철" /></span></h1>
         <p>공문·품의·가정통신문·라벨 출력까지, 학교 잡업무를 색깔 파일철에 모았어요. 지금 {ready}개 도구를 쓸 수 있고 {all.length - ready}개를 만들고 있어요.</p>
       </header>
-      <div className="bands-stack" onMouseLeave={() => setHover(null)}>
+      <div className="bands-stack" onMouseLeave={() => hoverBand(null)}>
         {AREAS.map((a, i) => (
           <Band key={a.id} a={a} i={i} open={open === a.id} hover={hover}
             onToggle={() => setOpen(o => (o === a.id ? null : a.id))}
-            onHover={setHover} onLeave={() => {}} onOpenTool={openTool} />
+            onHover={hoverBand} onLeave={() => {}} onOpenTool={openTool} />
         ))}
       </div>
     </div>

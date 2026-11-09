@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { DropZone } from '../../components/DropZone'
 import { baseName } from '../../lib/files'
 import { fill, parseFile, parsePasted, type Table } from '../../lib/table'
+import { loadRoster, saveRoster } from '../../lib/roster'
 import { margins, PAGE_H, PAGE_W, SHEETS, type Sheet } from './sheets'
 import './labels.css'
 
@@ -78,7 +79,13 @@ export function LabelMaker() {
   const { left, top } = margins(sheet)
   const perPage = sheet.cols * sheet.rows
 
-  const applyText = (t: string, h = header) => { setText(t); setTable(parsePasted(t, h)); setIsSample(false) }
+  const applyText = (t: string, h = header) => {
+    const tb = parsePasted(t, h)
+    setText(t); setTable(tb); setIsSample(false)
+    const ni = tb.headers.indexOf('이름'), no = tb.headers.indexOf('번호')
+    if (ni >= 0) saveRoster(tb.rows.filter(r => r[ni]).map((r, k) => ({ no: Number(r[no]) || k + 1, name: r[ni] })))
+  }
+  const roster = loadRoster()
 
   // 칸에 들어갈 순서: 시작 위치 앞은 비우고, 사람마다 복사 매수만큼 반복
   const cells = useMemo(() => {
@@ -148,6 +155,7 @@ export function LabelMaker() {
                 setTable(t); setIsSample(false)
                 setText([t.headers, ...t.rows].map(r => r.join('\t')).join('\n'))
               }} />
+              {roster.length > 0 && <button className="btn small" onClick={() => { setHeader(true); applyText(['번호\t이름', ...roster.map(x => `${x.no}\t${x.name}`)].join('\n'), true) }}>우리 반 명단 불러오기 ({roster.length}명)</button>}
               <label className="check"><input type="checkbox" checked={header} onChange={e => { setHeader(e.target.checked); applyText(text, e.target.checked) }} /> 첫 줄은 제목(열 이름)</label>
               <p className="note">
                 {isSample && <b className="warn">예시 명단이에요. 실제 명단으로 바꿔 넣으세요. </b>}

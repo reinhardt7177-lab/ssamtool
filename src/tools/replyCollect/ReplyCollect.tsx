@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import * as XLSX from 'xlsx'
 import { downloadBlob } from '../../lib/files'
+import { loadRoster, parseRoster, saveRoster, type Student } from '../../lib/roster'
 
-interface Student { no: number; name: string }
 interface State {
   title: string
   due: string
@@ -28,18 +28,9 @@ function load(): { s: State; sample: boolean } {
     const v = JSON.parse(localStorage.getItem(STORE) ?? 'null')
     if (v) return { s: v, sample: false }
   } catch { /* 저장된 것이 없으면 예시로 시작 */ }
+  const roster = loadRoster()
+  if (roster.length) return { s: { ...DEFAULT, roster, answers: {} }, sample: false }
   return { s: DEFAULT, sample: true }
-}
-
-function parseRoster(text: string): Student[] {
-  const out: Student[] = []
-  text.replace(/\r/g, '').split('\n').forEach(line => {
-    const cells = line.split(/\t|,|\s+/).map(c => c.trim()).filter(Boolean)
-    const no = cells.find(c => /^\d{1,3}$/.test(c))
-    const name = cells.find(c => /^[가-힣]{2,5}$/.test(c) && !/^(번호|이름|성명)$/.test(c))
-    if (name) out.push({ no: no ? Number(no) : out.length + 1, name })
-  })
-  return out
 }
 
 export function ReplyCollect() {
@@ -72,6 +63,7 @@ export function ReplyCollect() {
     const roster = parseRoster(rosterText)
     if (!roster.length) { setMsg('명단에서 이름을 찾지 못했어요. 번호와 이름이 한 줄에 하나씩 있는지 확인해 주세요.'); return }
     upd({ roster, answers: {} })
+    saveRoster(roster)
     setRosterText('')
     setMsg(`${roster.length}명 명단을 넣었어요. 응답은 모두 미제출로 시작해요.`)
   }
@@ -173,7 +165,7 @@ export function ReplyCollect() {
             <input value={s.options.join(', ')} onChange={e => upd({ options: e.target.value.split(',').map(x => x.trim()).filter(Boolean), answers: {} })} />
           </label>
           <details className="pm-paste">
-            <summary>우리 반 명단 넣기</summary>
+            <summary>우리 반 명단 넣기 (라벨·상담주간·체험학습에서도 같이 써요)</summary>
             <textarea rows={4} value={rosterText} onChange={e => setRosterText(e.target.value)} aria-label="학급 명단" placeholder={'1\t김하늘\n2\t이도윤'} />
             <div className="row"><button className="btn small" disabled={!rosterText.trim()} onClick={applyRoster}>명단 바꾸기</button></div>
           </details>

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { daysBetween, DAY_KO, fmt, fromIso, iso, parseOffDays } from './days'
 import '../newsletter/newsletter.css'
 import { loadSchool, saveSchool } from '../../lib/school'
+import { loadRoster } from '../../lib/roster'
 import { htmlToHwpx } from '../../lib/hwp'
 import { downloadBlob } from '../../lib/files'
 
@@ -51,6 +52,7 @@ export function FieldTrip() {
   useEffect(() => { try { localStorage.setItem(STORE_RULES, JSON.stringify(rules)) } catch { /* 저장 못 해도 동작에는 문제 없음 */ } }, [rules])
   useEffect(() => saveSchool({ name: f.school }), [f.school])
   const sheet = useRef<HTMLDivElement>(null)
+  const roster = useMemo(loadRoster, [])
   const [hwpMsg, setHwpMsg] = useState('')
   const saveHwpx = async () => {
     if (!sheet.current) return
@@ -89,6 +91,14 @@ export function FieldTrip() {
             <label className="field">반<input className="num" value={f.cls} onChange={e => set('cls', e.target.value)} style={{ width: 56 }} /></label>
             <label className="field">번호<input className="num" value={f.no} onChange={e => set('no', e.target.value)} style={{ width: 56 }} /></label>
             <label className="field">이름<input value={f.name} onChange={e => set('name', e.target.value)} style={{ width: 110 }} /></label>
+            {roster.length > 0 && (
+              <label className="field">우리 반에서 고르기
+                <select value="" onChange={e => { const x = roster[Number(e.target.value)]; if (x) { set('no', String(x.no)); set('name', x.name) } }}>
+                  <option value="">학생 선택</option>
+                  {roster.map((x, k) => <option key={k} value={k}>{x.no}. {x.name}</option>)}
+                </select>
+              </label>
+            )}
           </div>
           <div className="row">
             <label className="field">시작일<input type="date" value={f.start} onChange={e => set('start', e.target.value)} /></label>
