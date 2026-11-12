@@ -36,11 +36,12 @@ export function PlanRewrite() {
     if (!file) return
     setBusy(true); setMsg('바꾸는 중…')
     try {
-      const { blob, counts } = await hwpReplace(file, picked.map(c => [c.from, c.to]))
+      // 체크를 끈 것도 함께 넘겨(같은 글자로) 다른 줄이 그 안을 바꾸지 못하게 한다
+      const { blob, counts } = await hwpReplace(file, changes.map(c => [c.from, isOn(c.from, c.on) ? c.to : c.from]))
       downloadBlob(blob, `${name === baseName(file.name) ? name + '_' + to : name}.hwpx`)
-      const miss = picked.filter((_, i) => !counts[i]).map(c => c.from)
+      const miss = changes.filter((c, i) => isOn(c.from, c.on) && !counts[i]).map(c => c.from)
       setMissed(miss)
-      setMsg(`${counts.reduce((a, b) => a + b, 0)}곳을 바꿔 저장했어요.${miss.length ? ` 문서 안에서 글자 모양이 나뉘어 있어 못 바꾼 ${miss.length}개는 아래에 빨갛게 표시했어요. 한글에서 직접 고쳐 주세요.` : ''}`)
+      setMsg(`${changes.reduce((s, c, i) => s + (isOn(c.from, c.on) ? counts[i] : 0), 0)}곳을 바꿔 저장했어요.${miss.length ? ` 문서 안에서 글자 모양이 나뉘어 있어 못 바꾼 ${miss.length}개는 아래에 빨갛게 표시했어요. 한글에서 직접 고쳐 주세요.` : ''}`)
     } catch (e) { setMsg(`저장하지 못했어요: ${(e as Error).message ?? e}`) }
     setBusy(false)
   }
@@ -64,7 +65,7 @@ export function PlanRewrite() {
           </div>
         )}
         <p className="note">
-          {from ? `${from}년과 그 전해(${from - 1}년)를 한 해씩 올리고, 날짜 뒤 요일을 ${to}년 달력에 맞춰 고쳐요. ` : ''}
+          {from ? `${from - 1}~${from + 1}년을 한 해씩 올리고, 날짜 뒤 요일을 ${to}년 달력에 맞춰 고쳐요. ` : ''}
           법령 개정일처럼 바꾸면 안 되는 연도는 체크를 끈 채로 보여 줘요. 표를 보고 체크를 고친 뒤 저장하세요.
         </p>
         <div className="row">

@@ -15,7 +15,7 @@ export function toRecords(headers: string[], rows: string[][]): Rec[] {
     if (!kind) continue
     // "미인정"이 "인정"을 품고 있어서 긴 것부터 찾는다
     const reason = REASONS.find(k => (iReason >= 0 ? r[iReason] + ' ' + (r[iKind] ?? '') : all).includes(k)) ?? '기타'
-    const d = (iDate >= 0 ? r[iDate] : all).match(/(?:\d{4}[.\-/년]\s*)?(\d{1,2})\s*[.\-/월]\s*\d{1,2}/)
+    const d = (iDate >= 0 ? r[iDate] : all).match(/(?:\d{2,4}[.\-/년]\s*)?(\d{1,2})\s*[.\-/월]\s*\d{1,2}/)
     out.push({ name: iName >= 0 ? r[iName] : (all.match(/[가-힣]{2,4}/)?.[0] ?? ''), month: d ? Number(d[1]) : 0, kind, reason, days: iDays >= 0 ? Number(r[iDays]) || 1 : 1 })
   }
   return out

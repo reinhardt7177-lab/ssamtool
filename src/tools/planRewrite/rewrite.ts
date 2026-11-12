@@ -21,26 +21,30 @@ export function findChanges(text: string, from: number, to: number): Change[] {
   const ctx = (i: number, len: number) => text.slice(Math.max(0, i - 14), i + len + 14).replace(/\s+/g, ' ').trim()
   const add = (c: Omit<Change, 'on'>, on = true) => { if (c.from !== c.to && !out.has(c.from)) out.set(c.from, { ...c, on }) }
   let rest = text
+  // 작년·재작년과, 학년도 계획에 섞여 있는 다음 해(예: 2월 졸업식)까지 한 해씩 올린다
+  const moves = (y: number) => y >= from - 1 && y <= from + 1
+  const schoolYear = text.includes('학년도')
 
   // 1) 연도가 붙은 요일 날짜: 2026. 11. 26.(목) → 2027. 11. 26.(금)
   for (const m of text.matchAll(/(?<!\d)(20\d\d)(\.[ \t]*)(\d{1,2})(\.[ \t]*)(\d{1,2})(\.?[ \t]*)\(([일월화수목금토])\)/g)) {
     const y = Number(m[1])
-    if (y !== from && y !== from - 1) continue
     const ny = y + shift
-    add({ from: m[0], to: `${ny}${m[2]}${m[3]}${m[4]}${m[5]}${m[6]}(${weekday(ny, +m[3], +m[5])})`, kind: '날짜', context: ctx(m.index, m[0].length) })
+    if (moves(y)) add({ from: m[0], to: `${ny}${m[2]}${m[3]}${m[4]}${m[5]}${m[6]}(${weekday(ny, +m[3], +m[5])})`, kind: '날짜', context: ctx(m.index, m[0].length) })
+    // 안 바꾸는 해의 날짜도 가려야 아래에서 "5. 22.(수)"만 떼어 요일을 고치지 않는다
     rest = rest.slice(0, m.index) + blank(m[0]) + rest.slice(m.index + m[0].length)
   }
   // 2) 연도 없는 요일 날짜: 11. 26.(목) → 요일만 올해 달력에 맞춤
   for (const m of rest.matchAll(/(?<![\d.])(\d{1,2})(\.[ \t]*)(\d{1,2})(\.?[ \t]*)\(([일월화수목금토])\)/g)) {
     const mo = +m[1], d = +m[3]
     if (mo < 1 || mo > 12 || d < 1 || d > 31) continue
-    add({ from: m[0], to: `${m[1]}${m[2]}${m[3]}${m[4]}(${weekday(to, mo, d)})`, kind: '날짜', context: ctx(m.index, m[0].length) })
+    const y = schoolYear && mo <= 2 ? to + 1 : to // 학년도 문서의 1·2월은 다음 해 달력
+    add({ from: m[0], to: `${m[1]}${m[2]}${m[3]}${m[4]}(${weekday(y, mo, d)})`, kind: '날짜', context: ctx(m.index, m[0].length) })
     rest = rest.slice(0, m.index) + blank(m[0]) + rest.slice(m.index + m[0].length)
   }
   // 3) 나머지 연도: 2026학년도, 2026년, 2026. 3. 등 (뒤 글자까지 묶어 같은 연도의 다른 쓰임과 구분)
   for (const m of rest.matchAll(/(?<!\d)(20\d\d)(?!\d)([^\r\n]{0,6})/g)) {
     const y = Number(m[1])
-    if (y !== from && y !== from - 1) continue
+    if (!moves(y)) continue
     const tail = m[2].trimEnd()
     const c = ctx(m.index, m[0].length)
     add({ from: m[1] + tail, to: String(y + shift) + tail, kind: '연도', context: c }, !KEEP.test(text.slice(m.index, m.index + 16)))

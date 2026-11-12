@@ -22,14 +22,15 @@
 .cell .pic img { width: 100%; height: 100%; object-fit: cover; display: block }
 .cell .pic span { font-size: 9pt; color: #999 }
 
-@media (max-width: 1200px) { .labels { grid-template-columns: 1fr } .preview { position: static; max-height: none } }
+@media (max-width: 1200px) { .labels { grid-template-columns: minmax(0, 1fr) } .preview { position: static; max-height: none } }
 @media print {
-  @page { size: A4 portrait; margin: 0 }
+  @page label { size: A4 portrait; margin: 0 }
   .labels { display: block }
   .preview { display: block; padding: 0; background: none; overflow: visible; max-height: none; position: static }
-  .sheet { zoom: 1; box-shadow: none; page-break-after: always; break-after: page; overflow: hidden }
+  .sheet { page: label; zoom: 1; box-shadow: none; page-break-after: always; break-after: page; overflow: hidden }
   .sheet:last-child { page-break-after: auto; break-after: auto }
   .cell .pic { background: none }
   .cell .pic span { visibility: hidden }
   * { -webkit-print-color-adjust: exact; print-color-adjust: exact }
 }
+@media (max-width: 900px) { .two { grid-template-columns: minmax(0, 1fr) } }

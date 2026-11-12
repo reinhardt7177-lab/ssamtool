@@ -16,9 +16,12 @@ export function parseRoster(text: string): Student[] {
   const out: Student[] = []
   text.replace(/\r/g, '').split('\n').forEach(line => {
     const cells = line.split(/\t|,|\s+/).map(c => c.trim()).filter(Boolean)
-    const no = cells.find(c => /^\d{1,3}$/.test(c))
-    const name = cells.find(c => /^[가-힣]{2,5}$/.test(c) && !/^(번호|이름|성명)$/.test(c))
-    if (name) out.push({ no: no ? Number(no) : out.length + 1, name })
+    const ni = cells.findIndex(c => /^[가-힣]{2,5}$/.test(c) && !/^(번호|이름|성명|학년)$/.test(c))
+    if (ni < 0) return
+    // "4 2 7 김하늘"(학년 반 번호 이름)이면 이름 바로 앞 숫자가 번호. 앞에 숫자가 없으면 뒤에서 찾는다
+    const no = cells.slice(0, ni).reverse().find(c => /^\d{1,3}$/.test(c)) ?? cells.slice(ni + 1).find(c => /^\d{1,3}$/.test(c))
+    out.push({ no: no ? Number(no) : out.length + 1, name: cells[ni] })
   })
-  return out
+  // 번호는 응답을 구분하는 열쇠라 겹치면 안 된다
+  return new Set(out.map(s => s.no)).size === out.length ? out : out.map((s, i) => ({ ...s, no: i + 1 }))
 }

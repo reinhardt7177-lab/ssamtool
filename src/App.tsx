@@ -236,7 +236,7 @@ function Band({ a, i, open, hover, onToggle, onHover, onLeave, onOpenTool }: {
       onMouseEnter={() => onHover(i)}
       onMouseLeave={onLeave}
     >
-      <div className="band-tabs" onClick={e => { const t = (e.target as HTMLElement).closest('a.tag') as HTMLAnchorElement | null; if (t) onOpenTool(e, t.hash.replace('#/', '')) }}>
+      <div className={`band-tabs${ready.length > 3 ? ' many' : ''}`} onClick={e => { const t = (e.target as HTMLElement).closest('a.tag') as HTMLAnchorElement | null; if (t) onOpenTool(e, t.hash.replace('#/', '')) }}>
         {ready.map((t, k) => { const c = tabColor(a, k); return <Tag key={t.id} href={`#/${t.id}`} bg={c.color} fg={c.ink}>{t.name}</Tag> })}
       </div>
       <div className="band-body">
@@ -303,7 +303,7 @@ function Home() {
     <div ref={scope}>
       <header className="hero">
         <h1><Split text="Teacher's Files" /><span className="ko"><Split text="선생님 잡업무 파일철" /></span></h1>
-        <p>공문·품의·가정통신문·라벨 출력까지, 학교 잡업무를 색깔 파일철에 모았어요. 지금 {ready}개 도구를 쓸 수 있고 {all.length - ready}개를 만들고 있어요.</p>
+        <p>공문·품의·가정통신문·라벨 출력까지, 학교 잡업무를 색깔 파일철에 모았어요. 지금 {ready}개 도구를 쓸 수 있어요.{all.length > ready ? ` ${all.length - ready}개는 만들고 있어요.` : ''}</p>
       </header>
       <div className="bands-stack" onMouseLeave={() => hoverBand(null)}>
         {AREAS.map((a, i) => (

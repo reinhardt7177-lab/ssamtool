@@ -36,7 +36,9 @@ export function CounselWeek() {
   const slots = useMemo(() => makeSlots(start, end, dayFrom, dayTo, len, gap, {}), [start, end, dayFrom, dayTo, len, gap])
   const dates = useMemo(() => [...new Set(slots.map(s => s.date))], [slots])
   const times = useMemo(() => [...new Set(slots.map(s => s.start))].sort((a, b) => a - b), [slots])
-  const reqs = useMemo(() => text.split('\n').map(l => l.trim()).filter(Boolean).map(l => parseRequest(l, dates)).filter((r): r is Request => !!r), [text, dates])
+  const reqs = useMemo(() => text.split('\n').map(l => l.trim()).filter(Boolean).map(l => parseRequest(l, dates)).filter((r): r is Request => !!r)
+    // 배정은 이름으로 구분하므로, 같은 이름이 또 나오면 "김하늘(2)"로 바꿔 한 가정이 사라지지 않게 한다
+    .map((r, i, all) => { const n = all.slice(0, i).filter(x => x.name === r.name).length; return n ? { ...r, name: `${r.name}(${n + 1})` } : r }), [text, dates])
   const plan = useMemo(() => assign(reqs, slots, len, Object.fromEntries(Object.entries(fixed).filter(([n, id]) => reqs.some(r => r.name === n) && slots.some(s => s.id === id)))), [reqs, slots, len, fixed])
   const bySlot = useMemo(() => Object.fromEntries(Object.entries(plan).map(([n, id]) => [id, n])), [plan])
   const unassigned = reqs.filter(r => !plan[r.name])

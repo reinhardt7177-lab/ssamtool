@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { daysBetween, DAY_KO, fmt, fromIso, iso, parseOffDays } from './days'
+import { daysBetween, DAY_KO, fmt, fromIso, HOLIDAY_YEARS, iso, parseOffDays } from './days'
 import '../newsletter/newsletter.css'
 import { loadSchool, saveSchool } from '../../lib/school'
 import { loadRoster } from '../../lib/roster'
@@ -67,7 +67,7 @@ export function FieldTrip() {
   const days = useMemo(() => daysBetween(f.start, f.end, parseOffDays(rules.offText)), [f.start, f.end, rules.offText])
   const schoolDays = days.filter(d => d.kind === 'school').length
   const left = rules.maxDays - rules.used - schoolDays
-  const lead = f.start ? Math.round((fromIso(f.start).getTime() - fromIso(f.applyDate).getTime()) / 86400000) : 0
+  const lead = f.start && f.applyDate ? Math.round((fromIso(f.start).getTime() - fromIso(f.applyDate).getTime()) / 86400000) : 0
   const tooLate = !!f.start && lead < rules.leadDays
   const stu = `${f.grade}학년 ${f.cls}반 ${f.no}번`
   const period = days.length ? `${fmt(f.start)} ~ ${fmt(f.end)}` : ''
@@ -75,7 +75,7 @@ export function FieldTrip() {
 
   const Signature = ({ who }: { who: string }) => (
     <div style={{ marginTop: '14pt', textAlign: 'right' as const, lineHeight: 2.2 }}>
-      <div>{fmt(f.applyDate).replace(/\(.\)$/, '')}</div>
+      <div>{f.applyDate ? fmt(f.applyDate).replace(/\(.\)$/, '') : '　'}</div>
       <div>{who}: {f.guardian || '　　　　'} (서명)</div>
     </div>
   )
@@ -164,7 +164,8 @@ export function FieldTrip() {
           <label className="field">학교 휴업일 (한 줄에 하나, 예: 2026-11-02 재량휴업일)
             <textarea rows={2} value={rules.offText} onChange={e => setRules({ ...rules, offText: e.target.value })} />
           </label>
-          <p className="note">2026년 공휴일과 대체공휴일은 이미 빼고 셉니다. 허용 일수와 신청 기한은 학교·교육청마다 다르니 학교 규정에 맞게 고치세요.</p>
+          {[f.start, f.end].some(d => d && !HOLIDAY_YEARS.includes(Number(d.slice(0, 4)))) && <p className="note warn">{HOLIDAY_YEARS.join('·')}년 밖의 날짜는 공휴일을 몰라요. 그 기간의 공휴일은 아래 휴업일 칸에 직접 적어 주세요.</p>}
+          <p className="note">2026·2027년 공휴일과 대체공휴일은 이미 빼고 셉니다. 허용 일수와 신청 기한은 학교·교육청마다 다르니 학교 규정에 맞게 고치세요.</p>
         </section>
 
         <section className="panel">

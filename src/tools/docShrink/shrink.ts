@@ -116,7 +116,7 @@ export async function shrinkDocument(file: File, opt: ShrinkOptions, onProgress?
       const r = await recompress(bytes, ext, opt, canRename)
       if (!r) {
         images.push({ ...base, note: '그대로 둠 (BMP)' })
-      } else if (r.outExt === ext && r.data.length >= bytes.length) {
+      } else if (r.data.length >= bytes.length) { // JPG로 바꿨는데 더 커진 경우도 원본을 둔다
         images.push({ ...base, width: r.width, height: r.height, newWidth: r.width, newHeight: r.height, note: '이미 작아서 그대로 둠' })
       } else {
         let newPath = entry.name

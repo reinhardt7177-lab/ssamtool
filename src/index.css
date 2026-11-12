@@ -76,7 +76,7 @@ button:disabled { cursor: default }
 a.tag:hover { transform: translateY(-6px) }
 
 /* ── 도구 화면: 초대형 제목 + 파일철 + 종이 ── */
-.case { display: grid; gap: 0; padding-top: 40px }
+.case { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0; padding-top: 40px }
 .case-title { margin: 0 0 6px; font-family: var(--display-ko); font-weight: 400; font-size: clamp(3.4rem, 1.8rem + 5.8vw, 8rem); line-height: .95; letter-spacing: -0.01em; color: var(--night-ink); text-wrap: balance }
 .case-meta { display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: center; margin: 0 0 34px; font-family: var(--mono); font-size: 12px; color: var(--night-muted); text-transform: uppercase }
 .case-meta a { color: var(--night-ink); text-decoration: none; border-bottom: 1px solid rgba(255, 255, 255, .25) }
@@ -121,11 +121,12 @@ a.tag:hover { transform: translateY(-6px) }
 .title-row { display: none }
 
 /* ── 판(panel) ── */
-.panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-card); padding: var(--pad); display: grid; gap: 16px; align-content: start; min-width: 0 }
+.panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-card); padding: var(--pad); display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; align-content: start; min-width: 0 }
 .panel-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px }
 .panel-head h2 { margin: 0; font-size: var(--fs-section); line-height: 22px; font-weight: 600 }
 .panel-head .meta { font-size: var(--fs-small); color: var(--muted) }
 .grid-2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--gap); align-items: start }
+@media (max-width: 900px) { .grid-2 { grid-template-columns: minmax(0, 1fr) } }
 .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--gap) }
 .stack { display: grid; gap: var(--gap); align-content: start; min-width: 0 }
 
@@ -135,6 +136,8 @@ a.tag:hover { transform: translateY(-6px) }
 .field input, .field select, .field textarea { height: var(--control-height); border: 1px solid var(--control); border-radius: var(--radius-control); padding: 0 10px; background: var(--surface); font-weight: 400; font-size: var(--fs-body); min-width: 0 }
 .field textarea { height: auto; padding: 8px 10px; line-height: 20px }
 .field input[type=number] { width: 96px; font-variant-numeric: tabular-nums }
+.field { min-width: 0; max-width: 100% }
+.field select { max-width: 100% }
 .field.grow { flex: 1 1 260px }
 .field.grow input { width: 100% }
 .hint { font-size: var(--fs-small); color: var(--muted); font-weight: 400; line-height: 18px }
@@ -205,7 +208,12 @@ table.list tfoot td { border-top: 1px solid var(--border); font-weight: 600 }
 .band-tabs .tag { pointer-events: auto; margin-left: 0; margin-bottom: -3px }
 /* 탭이 띠 안으로 3px 파고들어 경계에 틈이 생기지 않게 한다 */
 .band-tabs .tag__mid { padding-bottom: 3px }
+/* 탭이 넷 이상인 띠: 탭끼리 겹치고 글자를 줄여 한 줄에 다 보이게 */
+.band-tabs.many { gap: 0 }
+.band-tabs.many .tag + .tag { margin-left: calc(var(--tag-h) * -0.75) }
 .band-tabs .tag__mid { font-weight: 400; font-size: clamp(1.15rem, .9rem + .7vw, 1.6rem); padding-top: 4px }
+.band-tabs.many .tag__mid { font-size: clamp(1rem, .45rem + .8vw, 1.6rem) }
+@media (max-width: 1100px) { .band-tabs { overflow-x: auto; scrollbar-width: none } }
 .band-body { position: relative; background: var(--bb); color: var(--bi); border-radius: 4px 4px 0 0; padding-bottom: var(--tag-h) }
 .band-body::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: #fff; opacity: 0; pointer-events: none; transition: opacity .65s var(--ease) }
 .band.is-hover .band-body::after { opacity: .05 }
@@ -292,15 +300,20 @@ textarea.attach::placeholder { color: var(--faint) }
 .pm-table input.w-unit { min-width: 52px; width: 64px }
 .pm-table input.w-num { min-width: 70px; width: 100px; text-align: right; font-variant-numeric: tabular-nums }
 .pm-table td:first-child input { min-width: 140px }
+.pm-table td.num { white-space: nowrap }
+.pm-table select { height: 32px; border: 1px solid transparent; border-radius: var(--radius-control); padding: 0 4px; background: var(--raised) }
+.pm-table.tight input, .pm-table.tight td:first-child input { min-width: 72px }
+.pm-table.tight select { width: 104px }
+.pm-table.tight th, .pm-table.tight td { padding-left: 4px; padding-right: 4px }
 .pm-paste summary { cursor: pointer; font-weight: 500; padding: 4px 0 }
 .pm-paste textarea { width: 100%; border: 1px solid var(--control); border-radius: var(--radius-control); padding: 8px 10px; font-size: 13px; resize: vertical; margin-top: 8px }
 .budget { display: grid; gap: 8px; padding-top: 14px; border-top: 1px solid var(--rule) }
 .budget-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap }
 .budget-head b { font-size: 22px; font-weight: 700; margin-left: 6px }
-.pm-out { display: grid; gap: 4px }
+.pm-out { display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px }
 .pm-label { font-size: 12px; color: var(--muted); margin-top: 6px }
 .pm-title { font-weight: 600 }
-.pm-body { margin: 0; padding: 10px 12px; background: var(--raised); border-radius: var(--radius-control); font-family: "Batang", "바탕", serif; font-size: 14px; line-height: 24px; white-space: pre-wrap; word-break: keep-all }
+.pm-body { margin: 0; padding: 10px 12px; background: var(--raised); border-radius: var(--radius-control); font-family: "Batang", "바탕", serif; font-size: 14px; line-height: 24px; white-space: pre-wrap; word-break: keep-all; overflow-wrap: anywhere }
 
 /* 회신서 취합: 첫째 선택지 = 데이터 색, 둘째 = 진한 회색, 미제출 = 빈 칸(점선) */
 .rc-summary { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 8px 24px }

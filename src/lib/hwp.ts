@@ -89,11 +89,16 @@ export async function hwpText(file: File): Promise<string> {
   try { return JSON.parse(doc.getTextFileText()) as string } finally { doc.free() } // rhwp는 JSON 문자열로 준다
 }
 
-// 글자를 차례로 바꾸고 HWPX로 저장한다. counts[i]는 pairs[i]가 바뀐 곳 수
+// 글자를 바꾸고 HWPX로 저장한다. counts[i]는 pairs[i]가 바뀐 곳 수.
+// 먼저 모두 임시 글자로 바꾼 뒤 새 글자를 채운다: 차례로 바꾸면 2025→2026이 다시 2026→2027에 걸린다.
+// from과 to가 같은 쌍은 "건드리지 말 곳"으로, 다른 쌍이 그 안을 바꾸지 못하게 지켜 준다.
 export async function hwpReplace(file: File, pairs: [string, string][]): Promise<{ blob: Blob; counts: number[] }> {
   const doc = await open(file)
+  const swap = (a: string, b: string) => (JSON.parse(doc.replaceAll(a, b, true)) as { count?: number }).count ?? 0
+  const hold = (i: number) => String.fromCharCode(0xE000, 0xE100 + i, 0xE001) // 문서에 없는 사용자 정의 글자
   try {
-    const counts = pairs.map(([a, b]) => (JSON.parse(doc.replaceAll(a, b, true)) as { count?: number }).count ?? 0)
+    const counts = pairs.map(([a], i) => swap(a, hold(i)))
+    pairs.forEach(([, b], i) => { if (counts[i] && swap(hold(i), b) !== counts[i]) throw new Error('바꾼 글자를 되돌리지 못했어요') })
     return { blob: new Blob([doc.exportHwpx() as BlobPart], { type: TYPES.hwpx }), counts }
   } finally {
     doc.free()

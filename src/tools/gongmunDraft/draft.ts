@@ -11,7 +11,7 @@ export function draftText(d: Draft): string {
   let n = 1
   if (d.related.length === 1) body.push(`${n++}. 관련: ${d.related[0]}`)
   else if (d.related.length > 1) { body.push(`${n++}. 관련`); d.related.forEach((r, i) => body.push(`  ${KO[i]}. ${r}`)) }
-  if (d.purpose) { body.push(`${n++}. ${d.purpose}`); d.items.forEach((t, i) => body.push(`  ${KO[i]}. ${t}`)) }
+  if (d.purpose || d.items.length) { body.push(`${n++}. ${d.purpose || '다음과 같이 알려 드립니다.'}`); d.items.forEach((t, i) => body.push(`  ${KO[i]}. ${t}`)) }
   d.more.forEach(m => body.push(`${n++}. ${m}`))
   if (d.attach.length) { body.push(''); body.push(attachmentText(d.attach)) }
   else if (body.length) body[body.length - 1] += '  끝.'

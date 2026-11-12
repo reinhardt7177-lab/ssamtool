@@ -77,15 +77,19 @@ export function LabelMaker() {
   const set = <K extends keyof Settings>(k: K, v: Settings[K]) => setS(p => ({ ...p, [k]: v }))
   const sheet = s.sheetId === 'custom' ? s.custom : SHEETS.find(x => x.id === s.sheetId) ?? SHEETS[0]
   const { left, top } = margins(sheet)
-  const perPage = sheet.cols * sheet.rows
+  const perPage = Math.max(1, Math.floor(sheet.cols) * Math.floor(sheet.rows) || 1) // 칸 수를 지우는 동안(0)에도 쪽 나누기가 끝나게
 
   const applyText = (t: string, h = header) => {
-    const tb = parsePasted(t, h)
-    setText(t); setTable(tb); setIsSample(false)
-    const ni = tb.headers.indexOf('이름'), no = tb.headers.indexOf('번호')
-    if (ni >= 0) saveRoster(tb.rows.filter(r => r[ni]).map((r, k) => ({ no: Number(r[no]) || k + 1, name: r[ni] })))
+    setText(t); setTable(parsePasted(t, h)); setIsSample(false)
   }
-  const roster = loadRoster()
+  const [roster, setRoster] = useState(loadRoster)
+  const nameCol = table.headers.indexOf('이름')
+  // 교직원·동아리 명단으로도 라벨을 만들기 때문에, 우리 반 명단은 버튼을 눌렀을 때만 바꾼다
+  const keepRoster = () => {
+    const no = table.headers.indexOf('번호')
+    const list = table.rows.filter(r => r[nameCol]).map((r, k) => ({ no: Number(r[no]) || k + 1, name: r[nameCol] }))
+    saveRoster(list); setRoster(list)
+  }
 
   // 칸에 들어갈 순서: 시작 위치 앞은 비우고, 사람마다 복사 매수만큼 반복
   const cells = useMemo(() => {
@@ -128,7 +132,7 @@ export function LabelMaker() {
         <section className="panel">
           <div className="panel-head"><h2>라벨지</h2><span className="meta num">한 장에 {perPage}칸</span></div>
           <div className="row">
-            <label className="field" style={{ minWidth: 300 }}>라벨지 규격
+            <label className="field grow">라벨지 규격
               <select value={s.sheetId} onChange={e => set('sheetId', e.target.value)}>
                 {SHEETS.map(x => <option key={x.id} value={x.id}>{x.name}</option>)}
                 <option value="custom">직접 입력</option>
@@ -156,6 +160,7 @@ export function LabelMaker() {
                 setText([t.headers, ...t.rows].map(r => r.join('\t')).join('\n'))
               }} />
               {roster.length > 0 && <button className="btn small" onClick={() => { setHeader(true); applyText(['번호\t이름', ...roster.map(x => `${x.no}\t${x.name}`)].join('\n'), true) }}>우리 반 명단 불러오기 ({roster.length}명)</button>}
+              {!isSample && nameCol >= 0 && <button className="btn small" onClick={keepRoster}>이 명단을 우리 반 명단으로 저장</button>}
               <label className="check"><input type="checkbox" checked={header} onChange={e => { setHeader(e.target.checked); applyText(text, e.target.checked) }} /> 첫 줄은 제목(열 이름)</label>
               <p className="note">
                 {isSample && <b className="warn">예시 명단이에요. 실제 명단으로 바꿔 넣으세요. </b>}

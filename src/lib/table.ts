@@ -17,7 +17,7 @@ export function parsePasted(text: string, firstRowIsHeader: boolean): Table {
 export async function parseFile(file: File, firstRowIsHeader: boolean): Promise<Table> {
   const wb = XLSX.read(await file.arrayBuffer(), { type: 'array' })
   const ws = wb.Sheets[wb.SheetNames[0]]
-  const cells = XLSX.utils.sheet_to_json<unknown[]>(ws, { header: 1, blankrows: false, defval: '' })
+  const cells = XLSX.utils.sheet_to_json<unknown[]>(ws, { header: 1, blankrows: false, defval: '', raw: false, dateNF: 'yyyy-mm-dd' })
     .map(r => r.map(c => String(c ?? '').trim()))
   return toTable(cells, firstRowIsHeader)
 }

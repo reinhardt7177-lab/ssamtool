@@ -26,11 +26,11 @@ const CIRCLED_KO = '㉮㉯㉰㉱㉲㉳㉴㉵㉶㉷㉸㉹㉺㉻'
 
 const LEVELS: { re: RegExp; name: string; index: (m: string) => number }[] = [
   { re: /^(\d{1,2})\.(?!\s*\d+\.)/, name: '1.', index: m => parseInt(m) },
-  { re: /^([가-하])\./, name: '가.', index: m => HANGUL_SEQ.indexOf(m) + 1 },
+  { re: /^([가나다라마바사아자차카타파하])\./, name: '가.', index: m => HANGUL_SEQ.indexOf(m) + 1 },
   { re: /^(\d{1,2})\)/, name: '1)', index: m => parseInt(m) },
-  { re: /^([가-하])\)/, name: '가)', index: m => HANGUL_SEQ.indexOf(m) + 1 },
+  { re: /^([가나다라마바사아자차카타파하])\)/, name: '가)', index: m => HANGUL_SEQ.indexOf(m) + 1 },
   { re: /^\((\d{1,2})\)/, name: '(1)', index: m => parseInt(m) },
-  { re: /^\(([가-하])\)/, name: '(가)', index: m => HANGUL_SEQ.indexOf(m) + 1 },
+  { re: /^\(([가나다라마바사아자차카타파하])\)/, name: '(가)', index: m => HANGUL_SEQ.indexOf(m) + 1 },
   { re: /^([①-⑳])/, name: '①', index: m => CIRCLED.indexOf(m) + 1 },
   { re: /^([㉮-㉻])/, name: '㉮', index: m => CIRCLED_KO.indexOf(m) + 1 },
 ]
@@ -100,7 +100,7 @@ export function check(text: string): Issue[] {
     const min = m[0].endsWith('반') ? 30 : m[3] ? +m[3] : 0
     push('시간', 'fix', m.index!, m[0], `${String(h).padStart(2, '0')}:${String(min).padStart(2, '0')}`, '시간은 24시각제로, 시·분 대신 쌍점을 써요.')
   }
-  for (const m of text.matchAll(/(?<![\d:])(\d{1,2})\s*시(?:\s*(\d{1,2})\s*분)?(?![간군대작청설행])/g)) {
+  for (const m of text.matchAll(/(?<![\d:])(\d{1,2})\s*시(?:\s*(\d{1,2})\s*분)?(?![간군대작청설행수])/g)) {
     if (/(오전|오후)\s*$/.test(text.slice(Math.max(0, m.index! - 4), m.index!))) continue
     const h = +m[1]
     if (h > 24) continue

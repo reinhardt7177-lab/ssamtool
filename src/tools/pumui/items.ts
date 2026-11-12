@@ -41,6 +41,7 @@ export function parseItems(text: string): { items: Item[]; skipped: number } {
     for (const k of Object.keys(HEAD) as (keyof typeof HEAD)[]) if (col[k] === undefined && HEAD[k].test(h)) col[k] = i
   })
   const hasHead = col.name !== undefined && (col.qty !== undefined || col.price !== undefined)
+  const iAmount = head.findIndex((h, i) => i !== col.price && /^(금액|합계금액|공급가액)/.test(h))
   const items: Item[] = []
   let skipped = 0
   for (const r of hasHead ? rows.slice(1) : rows) {
@@ -48,16 +49,22 @@ export function parseItems(text: string): { items: Item[]; skipped: number } {
     if (hasHead) {
       const qty = toNum(r[col.qty ?? -1] ?? '') ?? 1
       const price = toNum(r[col.price ?? -1] ?? '')
-      if (r[col.name!] && price !== null) it = { name: r[col.name!], spec: r[col.spec ?? -1] ?? '', unit: r[col.unit ?? -1] ?? '개', qty, price }
+      // 금액 칸이 있으면 수량×단가와 맞는지 본다: 칸이 밀린 줄을 품목으로 넣지 않으려고
+      const amount = iAmount >= 0 ? toNum(r[iAmount] ?? '') : null
+      const blankAmount = iAmount < 0 || !(r[iAmount] ?? '').trim() // 금액 칸에 숫자 아닌 글자가 있으면 밀린 줄이다
+      const fits = blankAmount || (amount !== null && price !== null && Math.abs(qty * price - amount) <= 1)
+      if (r[col.name!] && toNum(r[col.name!]) === null && price !== null && fits) it = { name: r[col.name!], spec: r[col.spec ?? -1] ?? '', unit: r[col.unit ?? -1] ?? '개', qty, price }
     } else {
       const nums = r.map(toNum)
       const texts = r.filter((c, i) => nums[i] === null && c)
       const vals = nums.filter((n): n is number => n !== null)
       if (texts.length && vals.length >= 2) {
-        let qty = vals[0], price = vals[1]
-        // 숫자 셋이면 수량·단가·금액: 수량×단가가 금액과 맞는지 보고 순서를 정한다
-        if (vals.length >= 3 && Math.abs(vals[0] * vals[1] - vals[2]) > 1 && Math.abs(vals[1] * vals[0] - vals[2]) > 1) {
-          price = vals[0]; qty = vals[1]
+        let [qty, price] = vals
+        // 숫자 셋이면 수량·단가·금액이 어떤 순서든: 곱이 나머지 하나와 맞는 두 수를 찾아 작은 쪽을 수량으로 본다
+        if (vals.length >= 3) {
+          const [a, b, c] = vals
+          const pair = Math.abs(a * b - c) <= 1 ? [a, b] : Math.abs(a * c - b) <= 1 ? [a, c] : Math.abs(b * c - a) <= 1 ? [b, c] : null
+          if (pair) { qty = Math.min(...pair); price = Math.max(...pair) }
         }
         const short = texts.find((t, i) => i > 0 && t.length <= 3)
         it = { name: texts[0], spec: texts.find((t, i) => i > 0 && t !== short) ?? '', unit: short ?? '개', qty, price }
@@ -113,9 +120,9 @@ export const SAMPLE_ITEMS: Item[] = [
 // 견적서 PDF·한글에서 읽은 글: 표는 칸마다 한 줄로 나오므로, 제목 칸(품명·수량·단가…)이 이어진 곳을 찾아
 // 그 칸 수만큼 줄을 묶어 한 행으로 되돌린 뒤 parseItems에 넘긴다. 한 줄에 한 품목인 글이면 그대로 읽는다.
 export function itemsFromQuote(text: string): { items: Item[]; skipped: number } {
-  const lines = text.replace(/\r/g, '').split('\n').map(l => l.trim()).filter(Boolean)
+  const lines = text.replace(/\r/g, '').split('\n').map(l => l.trim()) // 빈 줄은 빈 칸일 수 있어 남긴다
   const isHead = (l: string) => Object.values(HEAD).some(r => r.test(l)) || /^(금액|합계금액|공급가액|비고|번호|순번|No\.?)$/i.test(l)
-  let best = parseItems(lines.join('\n'))
+  let best = parseItems(lines.filter(Boolean).join('\n'))
   for (let i = 0; i < lines.length; i++) {
     if (!HEAD.name.test(lines[i])) continue
     let k = i
@@ -126,6 +133,17 @@ export function itemsFromQuote(text: string): { items: Item[]; skipped: number }
     for (let j = k; j + w <= lines.length && !/^(합\s*계|총\s*계|소\s*계)/.test(lines[j]); j += w) rows.push(lines.slice(j, j + w).join('\t'))
     const got = parseItems(rows.join('\n'))
     if (got.items.length > best.items.length) best = got
+    // 빈 칸이 줄로 안 나오는 문서도 있다: 빈 줄을 빼고, 늘 비는 끝 칸(비고 등)을 한두 개 덜어 가며 묶어 본다.
+    // 칸 수가 틀리면 수량×단가가 금액과 안 맞아 걸러지므로, 가장 많이 읽힌 쪽이 맞는 쪽이다
+    const tight = lines.slice(k).filter(Boolean)
+    // 금액 칸까지는 남겨야 그 검사를 할 수 있어서, 금액 칸 뒤의 칸만 덜어 본다
+    const amountAt = lines.slice(i, k).findIndex(h => /^(금액|합계금액|공급가액)/.test(h))
+    for (let ww = w; amountAt >= 0 && ww > amountAt && ww >= w - 2; ww--) {
+      const rows2 = [lines.slice(i, i + ww).join('\t')]
+      for (let j = 0; j + ww <= tight.length && !/^(합\s*계|총\s*계|소\s*계)/.test(tight[j]); j += ww) rows2.push(tight.slice(j, j + ww).join('\t'))
+      const g = parseItems(rows2.join('\n'))
+      if (g.items.length > best.items.length) best = g
+    }
   }
   return best
 }

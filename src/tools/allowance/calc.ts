@@ -13,8 +13,19 @@ export function taxOf(amount: number, tax: Tax): { income: number; local: number
   return { income, local: floor10(income * 0.1) }
 }
 
-export function calc(r: Row) {
-  const amount = Math.round(r.qty * r.price)
-  const t = taxOf(amount, r.tax)
-  return { amount, ...t, pay: amount - t.income - t.local }
+// 같은 사람에게 같은 소득으로 주는 줄은 합친 금액으로 세금을 매기고(과세 최저한도 합계로 판단), 금액 비율로 줄마다 나눈다
+export function calcAll(rows: Row[]) {
+  const amounts = rows.map(r => Math.round(r.qty * r.price))
+  const key = rows.map((r, i) => (r.who.trim() ? `${r.who.trim()}|${r.tax}` : `#${i}`))
+  const total = new Map<string, number>(), left = new Map<string, { income: number; local: number }>()
+  key.forEach((k, i) => total.set(k, (total.get(k) ?? 0) + amounts[i]))
+  return rows.map((r, i) => {
+    const k = key[i], sum = total.get(k)!
+    const rest = left.get(k) ?? taxOf(sum, r.tax)
+    const last = key.lastIndexOf(k) === i
+    const share = (n: number) => (last || !sum ? n : Math.min(n, floor10((n * amounts[i]) / sum)))
+    const income = share(rest.income), local = share(rest.local)
+    left.set(k, { income: rest.income - income, local: rest.local - local })
+    return { amount: amounts[i], income, local, pay: amounts[i] - income - local }
+  })
 }

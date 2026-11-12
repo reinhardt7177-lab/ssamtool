@@ -168,6 +168,8 @@ export function Newsletter() {
               <input type="file" accept="image/*" onChange={e => {
                 const f = e.target.files?.[0]
                 if (!f) return
+                // 로고는 학교 정보와 함께 브라우저에 저장하는데, 크면 저장 한도를 넘어 다른 정보까지 저장이 안 된다
+                if (f.size > 300_000) { setCopied('로고는 300KB 이하 그림으로 넣어 주세요.'); e.target.value = ''; return }
                 const rd = new FileReader()
                 rd.onload = () => setSchool(s => ({ ...s, logo: String(rd.result) }))
                 rd.readAsDataURL(f)

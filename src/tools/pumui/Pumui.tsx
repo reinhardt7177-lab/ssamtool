@@ -43,10 +43,10 @@ export function Pumui() {
     if (!f || !/\.(pdf|hwpx?)$/i.test(f.name)) { setPasteMsg('견적서는 PDF나 한글 파일로 넣어 주세요.'); return }
     setPasteMsg('견적서 읽는 중… (처음 한 번은 한글 엔진을 받아요)')
     try {
-      const { items: got } = itemsFromQuote(await hwpText(f))
+      const { items: got, skipped } = itemsFromQuote(await hwpText(f))
       if (!got.length) { setPasteMsg('견적서에서 품목 표를 찾지 못했어요. 스캔한 견적서는 글자를 읽을 수 없어요. 표를 복사해 아래에 붙여넣어 주세요.'); return }
-      setItems(isSample ? got : [...items, ...got]); setIsSample(false)
-      setPasteMsg(`견적서에서 ${got.length}개 품목을 읽었어요. 수량·단가가 맞는지 꼭 확인해 주세요.`)
+      setItems(xs => (isSample ? got : [...xs, ...got])); setIsSample(false) // 읽는 동안 고친 표를 잃지 않게 지금 값에 붙인다
+      setPasteMsg(`견적서에서 ${got.length}개 품목을 읽었어요.${skipped ? ` 금액이 맞지 않는 ${skipped}줄은 뺐어요.` : ''} 수량·단가가 맞는지 꼭 확인해 주세요.`)
     } catch (e) { setPasteMsg(`견적서를 열지 못했어요: ${(e as Error).message ?? e}`) }
   }
 
@@ -105,7 +105,7 @@ export function Pumui() {
                   <td><input aria-label={`${i + 1}번 품명`} value={it.name} onChange={e => setItem(i, { name: e.target.value })} /></td>
                   <td><input aria-label={`${i + 1}번 규격`} value={it.spec} onChange={e => setItem(i, { spec: e.target.value })} /></td>
                   <td><input aria-label={`${i + 1}번 단위`} className="w-unit" value={it.unit} onChange={e => setItem(i, { unit: e.target.value })} /></td>
-                  <td className="num"><input aria-label={`${i + 1}번 수량`} className="w-num" inputMode="numeric" value={it.qty} onChange={e => setItem(i, { qty: Number(e.target.value.replace(/[^\d.]/g, '')) || 0 })} /></td>
+                  <td className="num"><input aria-label={`${i + 1}번 수량`} className="w-num" type="number" min="0" step="any" value={it.qty} onChange={e => setItem(i, { qty: Number(e.target.value) || 0 })} /></td>
                   <td className="num"><input aria-label={`${i + 1}번 단가`} className="w-num" inputMode="numeric" value={won(it.price)} onChange={e => setItem(i, { price: Number(e.target.value.replace(/[^\d]/g, '')) || 0 })} /></td>
                   <td className="num">{won(amountOf(it))}</td>
                   <td className="num"><button className="btn text small" onClick={() => { setItems(xs => xs.filter((_, k) => k !== i)); setIsSample(false) }}>빼기</button></td>

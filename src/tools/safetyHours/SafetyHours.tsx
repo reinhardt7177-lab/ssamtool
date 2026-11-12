@@ -27,7 +27,8 @@ export function SafetyHours() {
   const [filter, setFilter] = useState('')
 
   useEffect(() => { if (!isSample) try { localStorage.setItem(STORE, JSON.stringify(s)) } catch { /* 저장 못 해도 동작에는 문제 없음 */ } }, [s, isSample])
-  const upd = (patch: Partial<Saved>) => { setS(p => ({ ...p, ...patch })); setIsSample(false) }
+  // 예시를 보다가 목표·학급만 고쳐도 예시 기록은 버린다 (안 그러면 예시가 실제 시수에 섞여 저장된다)
+  const upd = (patch: Partial<Saved>) => { setS(p => ({ ...p, records: isSample ? [] : p.records, ...patch })); setIsSample(false) }
 
   const done = Object.fromEntries(AREAS.map(a => [a.id, s.records.filter(r => r.area === a.id).reduce((n, r) => n + r.hours, 0)]))
   const totalTarget = AREAS.reduce((n, a) => n + (s.targets[a.id] ?? 0), 0)
@@ -46,7 +47,7 @@ export function SafetyHours() {
     let skipped = 0
     paste.replace(/\r/g, '').split('\n').map(l => l.trim()).filter(Boolean).forEach(line => {
       const cells = line.split('\t').map(c => c.trim())
-      const area = findArea(line)
+      const area = AREAS.find(a => cells.includes(a.name))?.id ?? findArea(line) // 영역 이름이 칸에 그대로 있으면 주제 낱말보다 먼저
       const dm = line.match(/(\d{4})\s*[-.]\s*(\d{1,2})\s*[-.]\s*(\d{1,2})/)
       const hours = Number(cells.find(c => /^\d+(\.\d)?$/.test(c)) ?? (line.match(/(\d+)\s*(?:차시|시간)/)?.[1] ?? 1))
       const topic = cells.filter(c => c && !/^\d+(\.\d)?$/.test(c) && !/\d{4}\s*[-.]/.test(c) && !VIA.includes(c) && !AREAS.some(a => c === a.name || (a.keys.test(c) && c.length <= 4))).sort((a, b) => b.length - a.length)[0] ?? ''

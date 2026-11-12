@@ -44,7 +44,15 @@ export function ReplyCollect() {
 
   useEffect(() => { if (!isSample) try { localStorage.setItem(STORE, JSON.stringify(s)) } catch { /* 저장 못 해도 동작에는 문제 없음 */ } }, [s, isSample])
 
-  const upd = (patch: Partial<State>) => { setS(p => ({ ...p, ...patch })); setIsSample(false) }
+  // 예시 명단인 동안은 저장하지 않는다. 우리 반 명단을 넣어야(roster) 진짜 기록이 된다
+  const upd = (patch: Partial<State>) => { setS(p => ({ ...p, ...patch })); if (patch.roster) setIsSample(false) }
+  const [optText, setOptText] = useState(() => init.s.options.join(', '))
+  const applyOptions = () => {
+    const options = optText.split(',').map(x => x.trim()).filter(Boolean)
+    if (!options.length || options.join() === s.options.join()) return
+    // 글자만 고쳤으면 응답을 그대로 두고, 선택지 수가 바뀌면 번호가 어긋나므로 비운다
+    upd({ options, answers: options.length === s.options.length ? s.answers : {} })
+  }
 
   // 누를 때마다 미제출 → 첫째 선택지 → 둘째 … → 미제출
   const cycle = (no: number) => {
@@ -75,7 +83,13 @@ export function ReplyCollect() {
     respText.replace(/\r/g, '').split('\n').map(l => l.trim()).filter(Boolean).forEach(line => {
       const st = s.roster.find(x => line.includes(x.name))
       // 긴 선택지부터 맞춰 봐야 '동의하지 않음'이 '동의'로 잡히지 않는다
-      const k = s.options.map((o, i) => ({ o, i })).sort((a, b) => b.o.length - a.o.length).find(({ o }) => line.includes(o))?.i
+      let k = s.options.map((o, i) => ({ o, i })).sort((a, b) => b.o.length - a.o.length).find(({ o }) => line.includes(o))?.i
+      // "동의하지 않습니다"처럼 선택지와 글자가 조금 다른 부정 답은 부정 선택지로, 없으면 맞추지 않는다
+      const NEG = /않|아니|불참|미참|안\s?함|반대|거부/
+      if (NEG.test(st ? line.replace(st.name, '') : line) && !(k !== undefined && NEG.test(s.options[k]))) {
+        const neg = s.options.findIndex(o => NEG.test(o))
+        k = neg >= 0 ? neg : undefined
+      }
       if (st && k !== undefined) { answers[st.no] = k; n++ } else if (!/이름|성명|응답|타임스탬프/.test(line)) unmatched.push(line.slice(0, 20))
     })
     upd({ answers })
@@ -162,7 +176,8 @@ export function ReplyCollect() {
             <label className="field">기한<input value={s.due} onChange={e => upd({ due: e.target.value })} style={{ width: 120 }} /></label>
           </div>
           <label className="field">선택지 (쉼표로 구분)
-            <input value={s.options.join(', ')} onChange={e => upd({ options: e.target.value.split(',').map(x => x.trim()).filter(Boolean), answers: {} })} />
+            <input value={optText} onChange={e => setOptText(e.target.value)} onBlur={applyOptions} />
+            <span className="hint">선택지 수를 바꾸면 받은 응답이 비워져요.</span>
           </label>
           <details className="pm-paste">
             <summary>우리 반 명단 넣기 (라벨·상담주간·체험학습에서도 같이 써요)</summary>
