@@ -23,7 +23,9 @@ export function DocTool({ form, children, fileName, text }: { form: ReactNode; c
   const saveHwpx = async () => {
     if (!sheet.current) return
     setMsg('한글 파일 만드는 중… (처음 한 번은 한글 엔진을 받아요)')
-    try { downloadBlob(await htmlToHwpx(sheet.current.innerHTML), `${safe(fileName)}.hwpx`); setMsg('한글 파일로 저장했어요.') }
+    const doc = sheet.current.cloneNode(true) as HTMLElement
+    doc.querySelectorAll('.no-print').forEach(el => el.remove()) // 화면에서만 쓰는 단추·입력 줄은 서류에 넣지 않는다
+    try { downloadBlob(await htmlToHwpx(doc.innerHTML), `${safe(fileName)}.hwpx`); setMsg('한글 파일로 저장했어요.') }
     catch (e) { setMsg(`한글 파일을 만들지 못했어요: ${(e as Error).message ?? e}`) }
   }
   const copy = async () => {

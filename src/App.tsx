@@ -16,6 +16,8 @@ import { Budget } from './tools/budget/Budget'
 import { Report } from './tools/report/Report'
 import { Inspection } from './tools/inspection/Inspection'
 import { Transfer } from './tools/transfer/Transfer'
+import { SignSheet } from './tools/signSheet/SignSheet'
+import { SignPage } from './tools/signSheet/SignPage'
 import { LabelMaker } from './tools/labels/LabelMaker'
 import { GongmunCheck } from './tools/gongmunCheck/GongmunCheck'
 import { Newsletter } from './tools/newsletter/Newsletter'
@@ -40,6 +42,7 @@ const SCREENS: Record<string, () => React.ReactElement> = {
   'report': () => <Report />,
   'inspection': () => <Inspection />,
   'transfer': () => <Transfer />,
+  'sign-sheet': () => <SignSheet />,
   'label-maker': () => <LabelMaker />,
   'gongmun-check': () => <GongmunCheck />,
   newsletter: () => <Newsletter />,
@@ -99,7 +102,7 @@ function useLenis() {
   useEffect(() => {
     if (reduce()) return
     // 표·미리보기·글상자처럼 안에서 따로 스크롤되는 곳은 Lenis가 건드리지 않는다
-    const lenis = new Lenis({ lerp: 0.075, prevent: (node: HTMLElement) => !!node.closest?.('textarea, select, .scroll-x, .preview, .nl-preview, .issues, .sh-list, .cw-notice, .pm-body') })
+    const lenis = new Lenis({ lerp: 0.075, prevent: (node: HTMLElement) => !!node.closest?.('textarea, select, .scroll-x, .preview, .nl-preview, .issues, .sh-list, .cw-notice, .pm-body, .sign-pad') })
     let id = 0
     const raf = (t: number) => { lenis.raf(t); id = requestAnimationFrame(raf) }
     id = requestAnimationFrame(raf)
@@ -113,6 +116,9 @@ export default function App() {
   const route = useRoute()
   const found = findTool(route)
   useLenis()
+
+  // 참석자가 폰으로 여는 서명 화면은 도구 화면 틀(파일철·상단 줄) 없이 서류 한 장만 보여 준다
+  if (route.startsWith('sign/')) return <SignPage id={route.slice(5)} />
 
   return (
     <div className="desk">

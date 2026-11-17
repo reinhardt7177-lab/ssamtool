@@ -1,0 +1,111 @@
+/* 서명부. 방향: 어두운 책상 위 결재 서류 한 장. 제목은 고운바탕, 라벨은 모노, 포인트는 공문 파일철 보라.
+   서명이 도착하면 서류 칸에 잉크가 왼쪽에서 번지듯 나타난다. */
+.sg, .sg-wall, .sg-collect { --sg: #581e70; --sg-soft: #efe6f3 }
+
+/* ── 폰 서명 화면 ── */
+.sg { min-height: 100dvh; padding: 18px 14px 40px; display: grid; align-content: start; justify-items: center; gap: 14px; background: var(--night); color: var(--text) }
+.sg-wait { margin-top: 30vh; color: var(--night-muted); font-family: var(--mono); font-size: 13px }
+.sg-foot { margin: 0; color: var(--night-muted); font-family: var(--mono); font-size: 11px; letter-spacing: .08em }
+.sg-sheet { width: min(100%, 30rem); background: var(--paper); border-radius: 3px; padding: 22px 20px 20px; display: grid; gap: 22px; position: relative; box-shadow: 0 1px 0 #0006, 0 18px 40px -18px #000; animation: sg-rise .7s var(--ease) backwards }
+.sg-sheet::before { content: ""; position: absolute; inset: 0 0 auto; height: 5px; background: var(--sg); border-radius: 3px 3px 0 0 }
+@keyframes sg-rise { from { transform: translateY(28px) rotate(-1.2deg); opacity: 0 } }
+.sg-kicker { display: flex; justify-content: space-between; gap: 12px; font-family: var(--mono); font-size: 11px; letter-spacing: .08em; color: var(--sg); padding-top: 4px }
+.sg-kicker span { color: var(--muted); letter-spacing: 0 }
+.sg-sheet h1 { margin: -14px 0 0; font-family: var(--serif); font-weight: 700; font-size: clamp(1.45rem, 1.1rem + 2vw, 1.9rem); line-height: 1.3; letter-spacing: -.01em; word-break: keep-all; text-wrap: balance }
+.sg-sheet section { display: grid; gap: 10px }
+.sg-sheet h2 { margin: 0; display: flex; align-items: baseline; gap: 10px; font-size: 15px; font-weight: 600; border-bottom: 1px solid var(--text); padding-bottom: 6px }
+.sg-sheet h2 span { font-family: var(--mono); font-size: 11px; font-weight: 500; color: var(--sg) }
+.sg-redo { margin-left: auto; border: 0; background: none; padding: 4px 0 4px 12px; font-size: 13px; color: var(--sg); text-decoration: underline; text-underline-offset: 3px }
+.sg-redo:disabled { color: var(--control); text-decoration: none }
+
+.sg-names { display: grid; grid-template-columns: repeat(auto-fill, minmax(5.4rem, 1fr)); gap: 6px }
+.sg-names button { min-height: 46px; border: 1px solid var(--control); border-radius: 2px; background: var(--surface); font-size: 15px; display: grid; place-content: center; justify-items: center; line-height: 1.2; transition: background-color .15s, border-color .15s, transform .08s }
+.sg-names button:active:not(:disabled) { transform: scale(.97) }
+.sg-names button.on { background: var(--sg); border-color: var(--sg); color: #fff; font-weight: 600 }
+.sg-names button:disabled { background: none; border-style: dashed; color: var(--faint) }
+.sg-names small { font-family: var(--mono); font-size: 10px; color: var(--sg) }
+.sg-find { height: 42px; font-size: 16px }
+.sg-none { grid-column: 1 / -1; margin: 0; font-size: 13px; color: var(--muted) }
+.sg-fields { display: grid; gap: 10px }
+.sg-fields label { display: grid; gap: 4px; font-size: 12px; color: var(--muted) }
+.sg-input { width: 100%; height: 48px; border: 0; border-bottom: 1px solid var(--control); border-radius: 0; background: none; padding: 0 2px; font-size: 17px; color: var(--text) } /* 16px 미만이면 아이폰이 화면을 확대한다 */
+.sg-input:focus { outline: none; border-bottom: 2px solid var(--sg) }
+
+/* 서명 칸: 서류의 서명란처럼 X표와 밑줄 */
+.sg-pad { position: relative; aspect-ratio: 5 / 2; border: 1px solid var(--control); border-radius: 2px; background: var(--surface) }
+.sg-pad::before { content: "×"; position: absolute; left: 12px; bottom: 21%; font-family: var(--serif); font-size: 20px; line-height: 1; color: var(--sg); pointer-events: none }
+.sg-pad::after { content: ""; position: absolute; left: 34px; right: 14px; bottom: 22%; border-bottom: 1px solid var(--text); opacity: .55; pointer-events: none }
+.sign-pad { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; cursor: crosshair }
+.sg-pad-hint { position: absolute; left: 0; right: 0; top: 34%; text-align: center; font-size: 13px; color: var(--faint); pointer-events: none; transition: opacity .25s }
+.sg-pad.inked .sg-pad-hint { opacity: 0 }
+
+.sg-consent { margin: 0; font-size: 12px; line-height: 19px; color: var(--muted) }
+.sg-msg { margin: 0; padding: 10px 12px; background: var(--pill-negative-bg); color: var(--pill-negative-ink); font-size: 13px; line-height: 20px; border-radius: 2px }
+.sg-send { height: 56px; border: 0; border-radius: 2px; background: var(--text); color: var(--paper); font-size: 16px; font-weight: 600; transition: background-color .2s, transform .08s }
+.sg-send:active:not(:disabled) { transform: translateY(1px) }
+.sg-send:disabled { background: var(--active); color: var(--faint); font-weight: 400 }
+
+.sg-gone p, .sg-done p { margin: 0; font-size: 15px; line-height: 24px; color: var(--muted) }
+.sg-proof { position: relative; display: grid; grid-template-columns: auto 1fr; align-items: end; gap: 12px; border-bottom: 1px solid var(--text); padding: 18px 4px 6px }
+.sg-proof-name { font-family: var(--serif); font-weight: 700; font-size: 18px; padding-bottom: 6px }
+.sg-proof img { width: 100%; max-height: 96px; object-fit: contain; object-position: left bottom; animation: ink-in .9s var(--ease) backwards }
+.sg-stamp { position: absolute; right: 0; top: -6px; width: 62px; height: 62px; border: 2px solid var(--sg); border-radius: 50%; display: grid; place-content: center; text-align: center; font-family: var(--serif); font-weight: 700; font-size: 13px; line-height: 1.15; color: var(--sg); transform: rotate(-9deg); animation: sg-stamp .45s cubic-bezier(.2, 1.6, .4, 1) .55s backwards; mix-blend-mode: multiply }
+@keyframes sg-stamp { from { transform: rotate(-9deg) scale(1.9); opacity: 0 } }
+
+/* 잉크가 번지듯 나타남 (선생님 서류의 새 서명에도 쓴다) */
+@keyframes ink-in { from { clip-path: inset(0 100% 0 0); filter: blur(1.5px) } to { clip-path: inset(0 0 0 0); filter: none } }
+.ink-in { animation: ink-in .8s var(--ease) backwards }
+
+/* ── 선생님 쪽 ── */
+.sg-privacy { border-left: 3px solid var(--sg); padding-left: 10px }
+.sg-share { display: grid; grid-template-columns: 132px minmax(0, 1fr); gap: 16px; align-items: start }
+.sg-qr { display: block; width: 100%; height: auto; shape-rendering: crispEdges }
+.sg-qr-btn { padding: 0; border: 1px solid var(--control); border-radius: 2px; background: #fff; transition: border-color .15s }
+.sg-qr-btn:hover { border-color: var(--sg) }
+.sg-link { width: 100%; height: var(--control-height); border: 1px solid var(--control); border-radius: var(--radius-control); padding: 0 10px; background: var(--raised); font-family: var(--mono); font-size: 12px }
+.sg-got { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 2px }
+.sg-got li { display: grid; grid-template-columns: 6rem 1fr auto; align-items: center; gap: 10px; border-bottom: 1px solid var(--rule); padding: 2px 0 }
+.sg-got img { height: 30px; width: auto; max-width: 100% }
+
+/* 서류의 성명 칸에 바로 쓰기 */
+.sg-paper { position: relative }
+.sg-paper.over { outline: 2px dashed var(--sg, #581e70); outline-offset: 6px }
+.sg-dropnote { position: absolute; inset: 0; display: grid; place-content: center; background: #fffcf9e6; font-family: var(--serif); font-weight: 700; font-size: 16pt; color: #581e70; pointer-events: none }
+.sg-edit { cursor: text; outline: none; transition: background-color .15s, box-shadow .15s }
+.sg-edit:hover { background: #f6eefa }
+.sg-edit:focus { background: #fff; box-shadow: inset 0 0 0 2px #581e70 }
+.sg-edit[data-ph]:empty::before { content: attr(data-ph); color: #a59fae; font-weight: 400 }
+.sg-del { position: absolute; right: 4pt; top: 50%; translate: 0 -50%; width: 18pt; height: 18pt; border: 0; border-radius: 50%; background: none; color: #8a8490; font-size: 13pt; line-height: 1; opacity: 0; transition: opacity .15s, background-color .15s, color .15s }
+tr:hover > td > .sg-del, .sg-del:focus-visible { opacity: 1 }
+.sg-del:hover { background: #c4242a; color: #fff }
+.sg-grip { position: absolute; left: 1pt; top: 50%; translate: 0 -50%; cursor: grab; color: #a59fae; font-size: 9pt; opacity: 0; transition: opacity .15s }
+tr:hover > td > .sg-grip { opacity: 1 }
+.sg-grip:active { cursor: grabbing }
+
+.sg-roster { display: grid; gap: 8px; border-top: 1px solid var(--rule); padding-top: 14px }
+.sg-roster-head { display: flex; align-items: baseline; gap: 10px; font-size: 13px }
+.sg-roster-head span { color: var(--muted); font-size: 12px }
+.sg-past { display: flex; flex-wrap: wrap; align-items: center; gap: 6px }
+.sg-past-btn { display: inline-flex; align-items: baseline; gap: 6px; max-width: 100%; height: 28px; padding: 0 10px; border: 1px dashed var(--control); border-radius: 2px; background: none; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: border-color .15s, background-color .15s }
+.sg-past-btn:hover { border-color: #581e70; border-style: solid; background: #f6eefa }
+.sg-past-btn small { color: #581e70; font-family: var(--mono); font-size: 10px }
+
+/* 전자칠판에 띄우는 큰 QR */
+.sg-wall { position: fixed; inset: 0; z-index: 50; background: #0d0d0dee; display: grid; place-content: center; justify-items: center; gap: 18px; padding: 24px; animation: sg-fade .25s both }
+@keyframes sg-fade { from { opacity: 0 } }
+.sg-wall-card { width: min(92vw, 34rem); background: var(--paper); border-radius: 3px; padding: 26px 28px 22px; display: grid; gap: 14px; border-top: 6px solid var(--sg); animation: sg-rise .6s var(--ease) backwards }
+.sg-wall-card h2 { margin: -6px 0 0; font-family: var(--serif); font-weight: 700; font-size: clamp(1.4rem, 1rem + 1.6vw, 2rem); line-height: 1.3; word-break: keep-all; text-wrap: balance }
+.sg-wall-card .sg-qr { max-height: 52vh; width: auto; max-width: 100%; margin: 0 auto }
+.sg-wall-count { font-family: var(--serif); font-size: 18px; text-align: center }
+.sg-wall-count b { font-family: var(--display); font-weight: 400; font-size: 44px; line-height: 1; color: var(--sg) }
+.sg-wall-last { margin: 0; min-height: 20px; text-align: center; font-family: var(--mono); font-size: 13px; color: var(--muted) }
+.sg-wall-close { font-family: var(--mono); font-size: 11px; color: var(--night-muted) }
+
+@media (max-width: 520px) { .sg-share { grid-template-columns: 1fr } .sg-qr-btn { width: 160px } }
+@media (prefers-reduced-motion: reduce) { .sg-sheet, .sg-stamp, .sg-proof img, .ink-in, .sg-wall, .sg-wall-card { animation: none } }
+
+/* 이 도구는 종이에 직접 쓰므로, 넓은 화면에서는 종이 쪽을 더 넓고 크게 보여 준다 */
+@media (min-width: 1201px) {
+  .nl:has(.sg-paper) { grid-template-columns: minmax(0, .8fr) minmax(600px, 1.2fr) }
+  .nl:has(.sg-paper) .nl-sheet { zoom: .82 }
+}
