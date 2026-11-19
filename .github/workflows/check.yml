@@ -1,0 +1,23 @@
+name: 테스트·빌드 확인
+
+# 배포는 Vercel(깃 연결)이 한다. 여기서는 올릴 때마다 테스트와 빌드가 통과하는지만 본다.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build

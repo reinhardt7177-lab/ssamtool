@@ -170,7 +170,6 @@ function Case({ areaId, toolId }: { areaId: string; toolId: string }) {
       .from('.case-title .ch', { xPercent: -150, opacity: 0, duration: .8, stagger: .025, ease: 'power4.out' }, .15)
       .from('.case-meta', { y: 16, opacity: 0, duration: .6, ease: 'power3.out' }, .5)
       .from('.side-tags .tag', { y: '110%', duration: .6, stagger: .06, ease: 'power3.out', clearProps: 'transform' }, .85)
-      .from('.paper__body > *', { y: 40, opacity: 0, duration: .7, stagger: .08, ease: 'power3.out' }, 1.1)
   }, { scope: root })
 
   return (
@@ -216,7 +215,9 @@ function Case({ areaId, toolId }: { areaId: string; toolId: string }) {
 const PALETTE = AREAS.map(x => ({ color: x.color, ink: x.ink }))
 function tabColor(a: Area, k: number) {
   if (k === 0) return { color: a.color, ink: a.ink }
-  const others = PALETTE.filter(p => p.color !== a.color)
+  // 탭은 바로 위 띠에 얹히므로 위 띠와 같은 색이면 그 띠에 묻힌다. 제 띠 색과 위 띠 색을 모두 뺀다
+  const above = AREAS[AREAS.indexOf(a) - 1]?.color
+  const others = PALETTE.filter(p => p.color !== a.color && p.color !== above)
   return others[(AREAS.indexOf(a) * 2 + k) % others.length]
 }
 

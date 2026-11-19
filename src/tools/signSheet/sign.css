@@ -1,13 +1,13 @@
 /* 서명부. 방향: 어두운 책상 위 결재 서류 한 장. 제목은 고운바탕, 라벨은 모노, 포인트는 공문 파일철 보라.
    서명이 도착하면 서류 칸에 잉크가 왼쪽에서 번지듯 나타난다. */
-.sg, .sg-wall, .sg-collect { --sg: #581e70; --sg-soft: #efe6f3 }
+.sg, .sg-wall, .sg-collect { --sg: #b3245e; --sg-band: #ff8fb3; --sg-soft: #fdebf1 }
 
 /* ── 폰 서명 화면 ── */
 .sg { min-height: 100dvh; padding: 18px 14px 40px; display: grid; align-content: start; justify-items: center; gap: 14px; background: var(--night); color: var(--text) }
 .sg-wait { margin-top: 30vh; color: var(--night-muted); font-family: var(--mono); font-size: 13px }
 .sg-foot { margin: 0; color: var(--night-muted); font-family: var(--mono); font-size: 11px; letter-spacing: .08em }
 .sg-sheet { width: min(100%, 30rem); background: var(--paper); border-radius: 3px; padding: 22px 20px 20px; display: grid; gap: 22px; position: relative; box-shadow: 0 1px 0 #0006, 0 18px 40px -18px #000; animation: sg-rise .7s var(--ease) backwards }
-.sg-sheet::before { content: ""; position: absolute; inset: 0 0 auto; height: 5px; background: var(--sg); border-radius: 3px 3px 0 0 }
+.sg-sheet::before { content: ""; position: absolute; inset: 0 0 auto; height: 6px; background: var(--sg-band); border-radius: 3px 3px 0 0 }
 @keyframes sg-rise { from { transform: translateY(28px) rotate(-1.2deg); opacity: 0 } }
 .sg-kicker { display: flex; justify-content: space-between; gap: 12px; font-family: var(--mono); font-size: 11px; letter-spacing: .08em; color: var(--sg); padding-top: 4px }
 .sg-kicker span { color: var(--muted); letter-spacing: 0 }
@@ -69,11 +69,11 @@
 
 /* 서류의 성명 칸에 바로 쓰기 */
 .sg-paper { position: relative }
-.sg-paper.over { outline: 2px dashed var(--sg, #581e70); outline-offset: 6px }
-.sg-dropnote { position: absolute; inset: 0; display: grid; place-content: center; background: #fffcf9e6; font-family: var(--serif); font-weight: 700; font-size: 16pt; color: #581e70; pointer-events: none }
+.sg-paper.over { outline: 2px dashed var(--sg, #b3245e); outline-offset: 6px }
+.sg-dropnote { position: absolute; inset: 0; display: grid; place-content: center; background: #fffcf9e6; font-family: var(--serif); font-weight: 700; font-size: 16pt; color: #b3245e; pointer-events: none }
 .sg-edit { cursor: text; outline: none; transition: background-color .15s, box-shadow .15s }
-.sg-edit:hover { background: #f6eefa }
-.sg-edit:focus { background: #fff; box-shadow: inset 0 0 0 2px #581e70 }
+.sg-edit:hover { background: #fdebf1 }
+.sg-edit:focus { background: #fff; box-shadow: inset 0 0 0 2px #b3245e }
 .sg-edit[data-ph]:empty::before { content: attr(data-ph); color: #a59fae; font-weight: 400 }
 .sg-del { position: absolute; right: 4pt; top: 50%; translate: 0 -50%; width: 18pt; height: 18pt; border: 0; border-radius: 50%; background: none; color: #8a8490; font-size: 13pt; line-height: 1; opacity: 0; transition: opacity .15s, background-color .15s, color .15s }
 tr:hover > td > .sg-del, .sg-del:focus-visible { opacity: 1 }
@@ -87,13 +87,13 @@ tr:hover > td > .sg-grip { opacity: 1 }
 .sg-roster-head span { color: var(--muted); font-size: 12px }
 .sg-past { display: flex; flex-wrap: wrap; align-items: center; gap: 6px }
 .sg-past-btn { display: inline-flex; align-items: baseline; gap: 6px; max-width: 100%; height: 28px; padding: 0 10px; border: 1px dashed var(--control); border-radius: 2px; background: none; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: border-color .15s, background-color .15s }
-.sg-past-btn:hover { border-color: #581e70; border-style: solid; background: #f6eefa }
-.sg-past-btn small { color: #581e70; font-family: var(--mono); font-size: 10px }
+.sg-past-btn:hover { border-color: #b3245e; border-style: solid; background: #fdebf1 }
+.sg-past-btn small { color: #b3245e; font-family: var(--mono); font-size: 10px }
 
 /* 전자칠판에 띄우는 큰 QR */
 .sg-wall { position: fixed; inset: 0; z-index: 50; background: #0d0d0dee; display: grid; place-content: center; justify-items: center; gap: 18px; padding: 24px; animation: sg-fade .25s both }
 @keyframes sg-fade { from { opacity: 0 } }
-.sg-wall-card { width: min(92vw, 34rem); background: var(--paper); border-radius: 3px; padding: 26px 28px 22px; display: grid; gap: 14px; border-top: 6px solid var(--sg); animation: sg-rise .6s var(--ease) backwards }
+.sg-wall-card { width: min(92vw, 34rem); background: var(--paper); border-radius: 3px; padding: 26px 28px 22px; display: grid; gap: 14px; border-top: 8px solid var(--sg-band); animation: sg-rise .6s var(--ease) backwards }
 .sg-wall-card h2 { margin: -6px 0 0; font-family: var(--serif); font-weight: 700; font-size: clamp(1.4rem, 1rem + 1.6vw, 2rem); line-height: 1.3; word-break: keep-all; text-wrap: balance }
 .sg-wall-card .sg-qr { max-height: 52vh; width: auto; max-width: 100%; margin: 0 auto }
 .sg-wall-count { font-family: var(--serif); font-size: 18px; text-align: center }

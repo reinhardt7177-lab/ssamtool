@@ -58,8 +58,19 @@ export const AREAS: Area[] = [
     tools: [
       { id: 'gongmun-check', name: '공문 작성 규칙 검사', summary: '날짜·시간·금액·항목 기호·붙임·"끝." 표시를 검사하고 고쳐요.', status: 'ready', formats: ['본문 붙여넣기'] },
       { id: 'gongmun-draft', name: '공문 초안', summary: '메모 몇 줄로 관련·항목·붙임·끝. 표시까지 규칙에 맞는 기안문 초안을 만들어요.', status: 'ready', formats: ['HWPX', '복사'] },
-      { id: 'sign-sheet', name: '서명부·출석부', summary: '참석자가 각자 폰으로 QR을 찍어 서명하면 출석부·등록부·협의록 서명란에 모아 줘요.', status: 'ready', formats: ['QR 서명', 'HWPX', '인쇄·PDF'] },
       { id: 'minutes', name: '회의록·협의록', summary: '안건·참석자·결정 사항으로 협의록을 만들어요.', status: 'ready', formats: ['HWPX', '인쇄·PDF'] },
+    ],
+  },
+  {
+    id: 'sign',
+    short: '서명',
+    desc: '연수 출석부, 교육 등록부, 협의록 서명란. 종이를 돌리지 않고 QR 하나로 각자 폰에서 서명을 받아 서류에 바로 모아요.',
+    color: '#ff8fb3',
+    ink: '#000000',
+    en: 'Signatures & Attendance',
+    name: '서명·출석',
+    tools: [
+      { id: 'sign-sheet', name: '서명부·출석부', summary: '참석자가 각자 폰으로 QR을 찍어 서명하면 출석부·등록부·협의록 서명란에 모아 줘요.', status: 'ready', formats: ['QR 서명', 'HWPX', '인쇄·PDF'] },
     ],
   },
   {
