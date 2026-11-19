@@ -44,7 +44,7 @@ export function SignPage({ id }: { id: string }) {
 
   const listed = sheet.names.length > 0
   const until = new Date(sheet.expires_at)
-  const ready = !!name.trim() && ink && !busy && (!listed || sheet.names.includes(name))
+  const ready = !!name.trim() && ink && !busy && (!listed || sheet.names.includes(name)) && !sheet.signed.includes(name.trim())
 
   const send = async () => {
     const image = pad.current?.toPng()
@@ -58,7 +58,7 @@ export function SignPage({ id }: { id: string }) {
         setDone(image)
       } else {
         setMsg(WHY[r])
-        if (r === 'duplicate') setSheet({ ...sheet, signed: [...sheet.signed, name.trim()] })
+        if (r === 'duplicate') { setSheet({ ...sheet, signed: [...sheet.signed, name.trim()] }); if (listed) setName('') }
       }
     } catch { setMsg('보내지 못했어요. 인터넷 연결을 확인하고 다시 눌러 주세요. 쓴 서명은 그대로 있어요.') }
     setBusy(false)

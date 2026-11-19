@@ -194,8 +194,9 @@ table.list tfoot td { border-top: 1px solid var(--border); font-weight: 600 }
 .hero p { animation: fade-up .8s cubic-bezier(.33, 1, .68, 1) .9s backwards }
 .band { animation: band-in .9s cubic-bezier(.16, 1, .3, 1) backwards; animation-delay: calc(.25s + var(--i, 0) * 50ms) }
 /* 도구 화면의 종이 속 내용: 파일철이 솟고 표지가 넘어간 뒤 차례로 들어온다 (GSAP에서 옮김, 멈춰도 내용이 보이게) */
-.paper__body > * { animation: fade-up .7s cubic-bezier(.33, 1, .68, 1) 1.1s backwards }
-.paper__body > * + * { animation-delay: 1.18s }
+@keyframes nudge-up { from { transform: translateY(28px) } }
+.paper__body > * { animation: nudge-up .8s cubic-bezier(.33, 1, .68, 1) .9s backwards }
+.paper__body > * + * { animation-delay: .98s }
 @media (prefers-reduced-motion: reduce) { .hero .ch, .hero p, .band, .paper__body > * { animation: none } }
 /* 글자 단위로 솟는 제목: 줄마다 가림막, 글자는 아래에서 */
 .split { display: inline-block }

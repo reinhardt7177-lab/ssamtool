@@ -15,7 +15,16 @@ export function parsePasted(text: string, firstRowIsHeader: boolean): Table {
 }
 
 export async function parseFile(file: File, firstRowIsHeader: boolean): Promise<Table> {
-  const wb = XLSX.read(await file.arrayBuffer(), { type: 'array' })
+  const buf = await file.arrayBuffer()
+  let wb: XLSX.WorkBook
+  if (/\.csv$/i.test(file.name)) {
+    // 한국어 엑셀은 CSV를 UTF-8이 아니라 CP949(EUC-KR)로 저장한다. UTF-8로 안 읽히면 그걸로 다시 읽는다
+    let text: string
+    try { text = new TextDecoder('utf-8', { fatal: true }).decode(buf) } catch { text = new TextDecoder('euc-kr').decode(buf) }
+    wb = XLSX.read(text.replace(/^\uFEFF/, ''), { type: 'string' })
+  } else {
+    wb = XLSX.read(buf, { type: 'array' })
+  }
   const ws = wb.Sheets[wb.SheetNames[0]]
   const cells = XLSX.utils.sheet_to_json<unknown[]>(ws, { header: 1, blankrows: false, defval: '', raw: false, dateNF: 'yyyy-mm-dd' })
     .map(r => r.map(c => String(c ?? '').trim()))

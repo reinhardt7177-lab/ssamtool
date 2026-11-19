@@ -34,8 +34,10 @@ export function Attendance() {
       <section className="panel">
         <div className="panel-head"><h2>출결 기록</h2><span className="meta num">{recs.length}건 읽음</span></div>
         <DropZone accept=".xlsx,.xls,.csv" multiple={false} label="나이스에서 내려받은 출결 엑셀" hint="또는 아래에 표를 복사해 붙여넣으세요." onFiles={async f => {
-          const t = await parseFile(f[0], true)
-          setText([t.headers, ...t.rows].map(r => r.join('\t')).join('\n')); setIsSample(false)
+          try {
+            const t = await parseFile(f[0], true)
+            setText([t.headers, ...t.rows].map(r => r.join('\t')).join('\n')); setIsSample(false)
+          } catch (e) { alert(`파일을 읽지 못했어요: ${(e as Error).message}. 암호가 걸린 파일이면 암호를 풀고 다시 넣어 주세요.`) }
         }} />
         <label className="field">표 붙여넣기 (첫 줄은 열 이름)
           <textarea rows={8} value={text} onChange={e => { setText(e.target.value); setIsSample(false) }} />

@@ -13,10 +13,11 @@ export function SignPad({ ref, onInk }: { ref: Ref<SignPadHandle>; onInk: (has: 
     const c = canvas.current!
     const ctx = c.getContext('2d')!
     // 화면 배율에 맞춰 선명하게. 크기가 바뀌면(가로로 돌리기) 지워지므로 다시 쓰게 한다
+    // getBoundingClientRect는 등장 애니메이션의 기울기까지 재서 칸보다 커진다. 레이아웃 크기(clientWidth)를 쓴다
     const fit = () => {
-      const r = c.getBoundingClientRect(), dpr = Math.min(devicePixelRatio || 1, 3)
-      if (c.width === Math.round(r.width * dpr)) return
-      c.width = Math.round(r.width * dpr); c.height = Math.round(r.height * dpr)
+      const dpr = Math.min(devicePixelRatio || 1, 3), w = Math.round(c.clientWidth * dpr), h = Math.round(c.clientHeight * dpr)
+      if (!w || (c.width === w && c.height === h)) return
+      c.width = w; c.height = h
       inked.current = false; onInk(false)
     }
     fit()
@@ -24,7 +25,8 @@ export function SignPad({ ref, onInk }: { ref: Ref<SignPadHandle>; onInk: (has: 
     ro.observe(c)
 
     let last: { x: number; y: number; t: number; w: number } | null = null
-    const at = (e: PointerEvent) => { const r = c.getBoundingClientRect(), k = c.width / r.width; return { x: (e.clientX - r.left) * k, y: (e.clientY - r.top) * k, t: e.timeStamp } }
+    let pen: number | null = null // 쓰는 손가락 하나만 따른다 (손바닥·두 번째 손가락이 닿아도 선이 튀지 않게)
+    const at = (e: PointerEvent) => { const r = c.getBoundingClientRect(); return { x: (e.clientX - r.left) * (c.width / r.width), y: (e.clientY - r.top) * (c.height / r.height), t: e.timeStamp } }
     const base = () => c.width / 150 // 칸 너비에 비례한 기본 굵기
     const line = (p: { x: number; y: number; t: number }) => {
       if (!last) return
@@ -36,14 +38,16 @@ export function SignPad({ ref, onInk }: { ref: Ref<SignPadHandle>; onInk: (has: 
     }
     const down = (e: PointerEvent) => {
       e.preventDefault()
+      if (pen !== null) return
+      pen = e.pointerId
       try { c.setPointerCapture(e.pointerId) } catch { /* 잡지 못해도 칸 안에서는 그려진다 */ }
       const p = at(e)
       last = { ...p, w: base() }
       ctx.fillStyle = INK; ctx.beginPath(); ctx.arc(p.x, p.y, base() / 2, 0, Math.PI * 2); ctx.fill() // 점만 찍어도 남게
       if (!inked.current) { inked.current = true; onInk(true) }
     }
-    const move = (e: PointerEvent) => { if (last) (e.getCoalescedEvents?.() ?? [e]).forEach(x => line(at(x))) }
-    const up = () => { last = null }
+    const move = (e: PointerEvent) => { if (last && e.pointerId === pen) (e.getCoalescedEvents?.() ?? [e]).forEach(x => line(at(x))) }
+    const up = (e: PointerEvent) => { if (e.pointerId === pen) { last = null; pen = null } }
     c.addEventListener('pointerdown', down); c.addEventListener('pointermove', move)
     c.addEventListener('pointerup', up); c.addEventListener('pointercancel', up)
     return () => { ro.disconnect(); c.removeEventListener('pointerdown', down); c.removeEventListener('pointermove', move); c.removeEventListener('pointerup', up); c.removeEventListener('pointercancel', up) }

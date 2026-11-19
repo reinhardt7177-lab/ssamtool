@@ -155,9 +155,11 @@ export function LabelMaker() {
             </label>
             <div className="stack" style={{ gap: 10 }}>
               <DropZone accept=".xlsx,.xls,.csv" multiple={false} label="또는 엑셀·CSV 파일" onFiles={async f => {
-                const t = await parseFile(f[0], header)
-                setTable(t); setIsSample(false)
-                setText([t.headers, ...t.rows].map(r => r.join('\t')).join('\n'))
+                try {
+                  const t = await parseFile(f[0], header)
+                  setTable(t); setIsSample(false)
+                  setText([t.headers, ...t.rows].map(r => r.join('\t')).join('\n'))
+                } catch (e) { alert(`파일을 읽지 못했어요: ${(e as Error).message}. 암호가 걸린 파일이면 암호를 풀고 다시 넣어 주세요.`) }
               }} />
               {roster.length > 0 && <button className="btn small" onClick={() => { setHeader(true); applyText(['번호\t이름', ...roster.map(x => `${x.no}\t${x.name}`)].join('\n'), true) }}>우리 반 명단 불러오기 ({roster.length}명)</button>}
               {!isSample && nameCol >= 0 && <button className="btn small" onClick={keepRoster}>이 명단을 우리 반 명단으로 저장</button>}

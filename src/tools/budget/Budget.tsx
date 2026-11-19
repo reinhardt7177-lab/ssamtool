@@ -38,8 +38,10 @@ export function Budget() {
       <section className="panel">
         <div className="panel-head"><h2>에듀파인 자료</h2><span className="meta num">{rows.length}개 사업</span></div>
         <DropZone accept=".xlsx,.xls,.csv" multiple={false} label="에듀파인에서 내려받은 엑셀" hint="사업명·예산액·집행액 열이 있으면 돼요." onFiles={async f => {
-          const t = await parseFile(f[0], true)
-          setText([t.headers, ...t.rows].map(r => r.join('\t')).join('\n')); setIsSample(false)
+          try {
+            const t = await parseFile(f[0], true)
+            setText([t.headers, ...t.rows].map(r => r.join('\t')).join('\n')); setIsSample(false)
+          } catch (e) { alert(`파일을 읽지 못했어요: ${(e as Error).message}. 암호가 걸린 파일이면 암호를 풀고 다시 넣어 주세요.`) }
         }} />
         <label className="field">표 붙여넣기 (첫 줄은 열 이름)
           <textarea rows={8} value={text} onChange={e => { setText(e.target.value); setIsSample(false) }} />

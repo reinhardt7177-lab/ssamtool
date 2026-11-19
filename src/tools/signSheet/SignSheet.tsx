@@ -4,7 +4,6 @@ import qrcode from 'qrcode-generator'
 import { DocTool, S } from '../../components/DocTool'
 import { extOf } from '../../lib/files'
 import { hwpText } from '../../lib/hwp'
-import { parseRoster } from '../../lib/roster'
 import { loadSchool } from '../../lib/school'
 import { createSheet, listSigns, removeSign, signLink, type Entry } from '../../lib/sign'
 import { parseFile } from '../../lib/table'
@@ -35,13 +34,21 @@ interface Past { title: string; names: string[] }
 const PAST = 'ssamtool.signsheet.rosters.v1'
 const loadPast = (): Past[] => { try { return JSON.parse(localStorage.getItem(PAST) ?? '[]') } catch { return [] } }
 
-// 명단 파일에서 이름만 뽑는다. 엑셀은 '이름·성명' 열을, 없으면 줄마다 첫 이름꼴 낱말을 쓴다
+// 명단 파일에서 이름만 뽑는다. '이름·성명' 제목 칸이 있으면 그 열을, 없으면 줄마다 마지막 이름꼴 낱말을 쓴다.
+// (교직원 명단은 '연번 부서 직위 성명' 순이라 첫 낱말을 쓰면 부서·직위가 이름으로 들어온다)
+const NOT_NAME = /^(연번|번호|순번|이름|성명|부서|소속|직위|직급|담당|비고|서명|교사|교감|교장|부장|주무관|실무사|학년|반)$/
+function namesFromRows(rows: string[][]): string[] {
+  const head = rows.findIndex(r => r.some(c => /^(이름|성명)$/.test(c.trim())))
+  if (head >= 0) {
+    const col = rows[head].findIndex(c => /^(이름|성명)$/.test(c.trim()))
+    return rows.slice(head + 1).map(r => (r[col] ?? '').trim())
+  }
+  return rows.map(r => r.map(c => c.trim()).filter(c => /^[가-힣]{2,5}$/.test(c) && !NOT_NAME.test(c)).pop() ?? '')
+}
 async function namesFromFile(file: File): Promise<string[]> {
-  if (['hwp', 'hwpx', 'pdf'].includes(extOf(file.name))) return parseRoster(await hwpText(file)).map(s => s.name)
-  const t = await parseFile(file, true)
-  const col = t.headers.findIndex(h => /이름|성명/.test(h))
-  if (col >= 0) return t.rows.map(r => r[col])
-  return parseRoster([t.headers, ...t.rows].map(r => r.join('\t')).join('\n')).map(s => s.name)
+  if (['hwp', 'hwpx', 'pdf'].includes(extOf(file.name))) return namesFromRows((await hwpText(file)).replace(/\r/g, '').split('\n').map(l => l.split(/\t|\s{2,}/)))
+  const t = await parseFile(file, false)
+  return namesFromRows(t.rows)
 }
 
 function Qr({ text }: { text: string }) {
@@ -69,6 +76,14 @@ export function SignSheet() {
   const dragFrom = useRef<number | null>(null)
   const upd = (p: Partial<State>) => setS(x => ({ ...x, ...p }))
   useEffect(() => { try { localStorage.setItem(STORE, JSON.stringify(s)) } catch { setMsg('브라우저 저장 공간이 가득 찼어요. 서명은 화면에 남아 있으니 지금 인쇄하거나 저장해 주세요.') } }, [s])
+  // 서버가 비었거나(7일 뒤 자동 삭제, 다른 탭에서 끝냄) 이상한 값을 줘도 이미 받은 서명은 지우지 않는다
+  const merge = (local: Entry[], got: unknown): Entry[] => {
+    if (!Array.isArray(got)) return local
+    const fresh = (got as Entry[]).filter(e => e && typeof e.name === 'string' && typeof e.image === 'string' && e.image.startsWith('data:image/png;base64,'))
+    const known = new Set(local.map(e => e.name))
+    const add = fresh.filter(e => !known.has(e.name))
+    return add.length ? [...local, ...add] : local
+  }
 
   const fields = split(s.fields).slice(0, 5).map(f => f.slice(0, 12))
   const names = clean(s.names.split('\n'))
@@ -83,7 +98,10 @@ export function SignSheet() {
     let stop = false
     const pull = async () => {
       if (document.hidden) return
-      try { const entries = await listSigns(id, key); if (!stop) setS(x => (x.session?.id === id ? { ...x, entries } : x)) } catch { /* 다음 차례에 다시 */ }
+      try {
+        const got = await listSigns(id, key)
+        if (!stop) setS(x => { if (x.session?.id !== id) return x; const entries = merge(x.entries, got); return entries === x.entries ? x : { ...x, entries } })
+      } catch { /* 다음 차례에 다시 */ }
     }
     pull()
     const t = setInterval(pull, 4000)
@@ -102,6 +120,7 @@ export function SignSheet() {
 
   const start = async () => {
     if (!s.title.trim()) { setMsg('제목을 먼저 적어 주세요.'); return }
+    if (s.entries.length && !confirm(`받아 둔 서명 ${s.entries.length}개가 지워져요. 먼저 인쇄하거나 한글로 저장했나요?`)) return
     setBusy(true); setMsg('')
     try {
       const session = await createSheet(s.title.trim().slice(0, 100), fields, names)
@@ -117,7 +136,10 @@ export function SignSheet() {
     if (!s.session) return
     setBusy(true)
     try {
-      const entries = await listSigns(s.session.id, s.session.key) // 마지막으로 한 번 더 받고 지운다
+      const entries = merge(s.entries, await listSigns(s.session.id, s.session.key)) // 마지막으로 한 번 더 받는다
+      // 이 브라우저에 먼저 저장되는지 보고 나서 서버를 지운다. 저장이 안 되면 서버 것을 남겨 둔다
+      try { localStorage.setItem(STORE, JSON.stringify({ ...s, session: null, entries })) }
+      catch { upd({ entries }); setMsg('브라우저 저장 공간이 가득 차서 서버의 서명을 지우지 않았어요. 지금 인쇄하거나 한글로 저장한 뒤 다시 끝내 주세요.'); setBusy(false); setEnding(false); return }
       await removeSign(s.session.id, s.session.key)
       upd({ session: null, entries }); setMsg('서버에서 지웠어요. 받은 서명은 이 브라우저에만 남아 있어요.')
     } catch (e) { setMsg(`끝내지 못했어요: ${(e as Error).message}. 인터넷 연결을 확인해 주세요.`) }
@@ -142,12 +164,17 @@ export function SignSheet() {
 
   // ── 서류의 성명 칸에 바로 쓰기 ──
   // i번째 칸에 적은 글을 명단에 넣는다. 엑셀에서 여러 줄을 붙이면 줄마다 한 명이 된다. 비우면 그 줄이 빠진다
+  const [ver, setVer] = useState(0) // 고친 글을 받아들이지 않을 때 칸을 다시 그려 원래 이름으로 되돌린다
   const commit = (i: number, raw: string) => {
-    const parts = raw.split(/[\n\t,]/).map(x => x.trim()).filter(Boolean)
+    const parts = raw.split(/[\n\t,]/).map(x => x.trim().slice(0, 20)).filter(Boolean)
+    const others = names.filter((_, k) => k !== i)
+    const dup = parts.filter((p, k) => others.includes(p) || parts.indexOf(p) !== k)
+    if (dup.length) setMsg(`이미 있는 이름이라 넣지 않았어요: ${[...new Set(dup)].join(', ')}. 같은 이름이 둘이면 "김민지(3학년)"처럼 구분해 적어 주세요.`)
     const next = [...names]
-    next.splice(i, i < names.length ? 1 : 0, ...parts)
+    next.splice(i, i < names.length ? 1 : 0, ...parts.filter(p => !dup.includes(p)))
     setNames(next)
-    return parts.length
+    setVer(v => v + 1)
+    return parts.length - dup.length
   }
   const focusCell = (i: number) => setTimeout(() => {
     const el = paper.current?.querySelector<HTMLElement>(`[data-name="${i}"]`)
@@ -156,11 +183,11 @@ export function SignSheet() {
     getSelection()?.selectAllChildren(el); getSelection()?.collapseToEnd()
   }, 30)
   // 고칠 수 있는 성명 칸. 서명 받는 동안에는 잠근다. 칸은 값이 바뀌면 새로 그려서(key) 손으로 고친 글과 어긋나지 않게 한다
-  const nameCell = (i: number, style: object) => {
+  const nameCell = (i: number, style: object, extra = '') => {
     const name = names[i] ?? ''
     if (live) return <td key={`n${i}`} style={style}>{name}</td>
     return (
-      <td key={`n${i}-${name}-${names.length}`} style={style} className="sg-edit" data-name={i} data-ph={i === names.length ? '이름 쓰기' : undefined}
+      <td key={`n${i}-${name}-${names.length}-${ver}`} style={style} className={`sg-edit ${extra}`} data-name={i} data-ph={i === names.length ? '이름 쓰기' : undefined}
         contentEditable="plaintext-only" suppressContentEditableWarning spellCheck={false} role="textbox" aria-label={i < names.length ? `${i + 1}번 이름` : '새 이름'}
         onBlur={(e: FocusEvent<HTMLElement>) => { const t = (e.currentTarget.textContent ?? '').trim(); if (t !== name) commit(i, t) }}
         onKeyDown={(e: ReactKey<HTMLElement>) => {
@@ -168,13 +195,15 @@ export function SignSheet() {
           e.preventDefault()
           const t = (e.currentTarget.textContent ?? '').trim()
           const n = t === name ? 1 : commit(i, t)
-          focusCell(i + Math.max(n, i < names.length ? 1 : 0))
+          focusCell(i + n) // 비운 줄이면(n=0) 올라온 다음 사람 칸에 그대로 머문다
         }}
         onPaste={(e: ClipboardEvent<HTMLElement>) => {
           const t = e.clipboardData.getData('text')
           if (!/[\n\t,]/.test(t.trim())) return // 한 낱말은 그냥 붙인다
           e.preventDefault()
-          focusCell(i + commit(i, `${e.currentTarget.textContent ?? ''}\n${t}`))
+          const cur = e.currentTarget.textContent ?? ''
+          const whole = !cur.trim() || getSelection()?.toString().trim() === cur.trim() // 칸 글자를 다 골랐으면 바꾸기
+          focusCell(i + commit(i, whole ? t : `${cur}\n${t}`))
         }}
       >{name}</td>
     )
@@ -208,7 +237,7 @@ export function SignSheet() {
       <section className="panel">
         <div className="panel-head"><h2>서류</h2><span className="meta">{live ? '서명 받는 동안에는 받을 항목과 명단을 바꿀 수 없어요' : '어떤 서류에 서명을 받을지 골라요'}</span></div>
         <div className="tpl-tabs" role="tablist" aria-label="서류 틀">
-          {(Object.keys(TPLS) as Tpl[]).map(k => <button key={k} role="tab" aria-selected={s.tpl === k} className={`tpl-tab${s.tpl === k ? ' on' : ''}`} onClick={() => upd(live ? { tpl: k } : { tpl: k, fields: TPLS[k].fields })}>{TPLS[k].name}</button>)}
+          {(Object.keys(TPLS) as Tpl[]).map(k => <button key={k} role="tab" aria-selected={s.tpl === k} className={`tpl-tab${s.tpl === k ? ' on' : ''}`} onClick={() => upd(live || s.entries.length ? { tpl: k } : { tpl: k, fields: TPLS[k].fields })}>{TPLS[k].name}</button>)}
         </div>
         <label className="field grow">제목 (연수·회의·교육 이름)<input value={s.title} maxLength={100} onChange={e => upd({ title: e.target.value })} /></label>
         <div className="row">
@@ -322,9 +351,11 @@ export function SignSheet() {
             {Array.from({ length: Math.ceil(slots.length / 2) }, (_, r) => (
               <tr key={r}>{[slots[r * 2], slots[r * 2 + 1]].map((x, k) => {
                 const isNew = x?.i === names.length
+                // 새 이름 칸은 화면에서만 쓴다: 인쇄·한글 저장에서는 빈칸으로 둔다
+                if (isNew) return [<td key={`p${k}`} className="sg-print-blank" style={mid} />, <td key={`q${k}`} className="sg-print-blank" style={signCell} />, nameCell(x.i!, { ...mid, borderStyle: 'dashed' }, 'no-print'), <td key={`s${k}`} className="no-print" style={{ ...signCell, borderStyle: 'dashed' }} />]
                 return [
-                  x?.i !== undefined ? nameCell(x.i, { ...mid, ...(isNew ? { borderStyle: 'dashed' } : {}) }) : <td key={`x${k}`} style={mid}>{x?.e?.name}</td>,
-                  <td key={`s${k}`} style={isNew ? { ...signCell, borderStyle: 'dashed' } : signCell}>{sign(x?.e)}{editable && x?.i !== undefined && !isNew && !x.e && del(x.i)}</td>,
+                  x?.i !== undefined ? nameCell(x.i, mid) : <td key={`x${k}`} style={mid}>{x?.e?.name}</td>,
+                  <td key={`s${k}`} style={signCell}>{sign(x?.e)}{editable && x?.i !== undefined && !isNew && !x.e && del(x.i)}</td>,
                 ]
               })}</tr>
             ))}

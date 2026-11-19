@@ -71,6 +71,8 @@
 .sg-paper { position: relative }
 .sg-paper.over { outline: 2px dashed var(--sg, #b3245e); outline-offset: 6px }
 .sg-dropnote { position: absolute; inset: 0; display: grid; place-content: center; background: #fffcf9e6; font-family: var(--serif); font-weight: 700; font-size: 16pt; color: #b3245e; pointer-events: none }
+.sg-print-blank { display: none }
+@media print { .sg-print-blank { display: table-cell } }
 .sg-edit { cursor: text; outline: none; transition: background-color .15s, box-shadow .15s }
 .sg-edit:hover { background: #fdebf1 }
 .sg-edit:focus { background: #fff; box-shadow: inset 0 0 0 2px #b3245e }

@@ -5,13 +5,14 @@ import { baseName, downloadBlob, extOf, formatBytes } from '../../lib/files'
 
 const A4 = { w: 595.28, h: 841.89 }
 
-async function imageToPng(file: File): Promise<Uint8Array> {
-  const bmp = await createImageBitmap(file)
+// 브라우저가 EXIF 방향대로 돌려 그린 그림을 다시 굽는다 (폰 사진이 옆으로 눕지 않게)
+async function redraw(file: File, type: 'image/png' | 'image/jpeg'): Promise<Uint8Array> {
+  const bmp = await createImageBitmap(file, { imageOrientation: 'from-image' })
   const c = document.createElement('canvas')
   c.width = bmp.width; c.height = bmp.height
   c.getContext('2d')!.drawImage(bmp, 0, 0)
   bmp.close()
-  const blob = await new Promise<Blob>((res, rej) => c.toBlob(b => (b ? res(b) : rej(new Error('그림 변환 실패'))), 'image/png'))
+  const blob = await new Promise<Blob>((res, rej) => c.toBlob(b => (b ? res(b) : rej(new Error('그림 변환 실패'))), type, .92))
   return new Uint8Array(await blob.arrayBuffer())
 }
 
@@ -26,8 +27,8 @@ export async function merge(files: File[], fitImagesToA4: boolean): Promise<Uint
       continue
     }
     const img = ext === 'jpg' || ext === 'jpeg'
-      ? await out.embedJpg(await f.arrayBuffer())
-      : await out.embedPng(ext === 'png' ? await f.arrayBuffer() : await imageToPng(f))
+      ? await out.embedJpg(await redraw(f, 'image/jpeg'))
+      : await out.embedPng(ext === 'png' ? await f.arrayBuffer() : await redraw(f, 'image/png'))
     if (fitImagesToA4) {
       const landscape = img.width > img.height
       const pw = landscape ? A4.h : A4.w, ph = landscape ? A4.w : A4.h
